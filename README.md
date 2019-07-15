@@ -14,9 +14,9 @@ parser=<fully-qualified-class-name-of-SAC-parser>
 fail-on-warning=<true|false>
 cachedir=<path to site cache>
 ```
-`parser`: the qualified class name of the SAC/NSAC parser to be used in the test.
-`fail-on-warning`: if set to true, a test shall fail even if only style sheet warnings were logged.
-`cachedir`: that has to be set to the directory where the cache files can be stored.
+- `parser`: the qualified class name of the SAC/NSAC parser to be used in the test.
+- `fail-on-warning`: if set to true, a test shall fail even if only style sheet warnings were logged.
+- `cachedir`: that has to be set to the directory where the cache files can be stored.
 
 You can use this tool to monitor a list of URLs that are important for you. The tool can be run from an IDE or with the Maven Failsafe plugin (`mvn verify`), provided that the CI environment is set up correctly.
 
