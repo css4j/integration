@@ -21,6 +21,7 @@ import org.w3c.dom.css.CSSValue;
 
 import io.sf.carte.doc.style.css.CSSGradientValue;
 import io.sf.carte.doc.style.css.CSSPrimitiveValue2;
+import io.sf.carte.doc.style.css.ExtendedCSSPrimitiveValue;
 import io.sf.carte.doc.style.css.ExtendedCSSValue;
 import io.sf.carte.doc.style.css.ExtendedCSSValueList;
 import io.sf.carte.doc.style.css.RGBAColor;
@@ -129,19 +130,28 @@ class ValueComparator {
 	private int testDifferentValue(ExtendedCSSValue value, ExtendedCSSValue otherValue) {
 		if (value.getCssValueType() == CSSValue.CSS_PRIMITIVE_VALUE
 				&& otherValue.getCssValueType() == CSSValue.CSS_PRIMITIVE_VALUE) {
-			CSSPrimitiveValue2 pri = (CSSPrimitiveValue2) value;
-			CSSPrimitiveValue2 priOther = (CSSPrimitiveValue2) otherValue;
-			if (pri.getPrimitiveType() == CSSPrimitiveValue.CSS_RGBCOLOR
-					&& priOther.getPrimitiveType() == CSSPrimitiveValue.CSS_RGBCOLOR) {
-				RGBAColor color = pri.getRGBColorValue();
-				RGBAColor otherColor = priOther.getRGBColorValue();
-				if (similarComponentValues(color.getRed(), otherColor.getRed())
-						&& similarComponentValues(color.getGreen(), otherColor.getGreen())
-						&& similarComponentValues(color.getBlue(), otherColor.getBlue())
-						&& Math.abs(color.getAlpha().getFloatValue(CSSPrimitiveValue.CSS_NUMBER)
-								- otherColor.getAlpha().getFloatValue(CSSPrimitiveValue.CSS_NUMBER)) < 0.01f) {
-					return 1;
-				} else {
+			ExtendedCSSPrimitiveValue pri = (ExtendedCSSPrimitiveValue) value;
+			ExtendedCSSPrimitiveValue priOther = (ExtendedCSSPrimitiveValue) otherValue;
+			if (pri.getPrimitiveType() == CSSPrimitiveValue.CSS_RGBCOLOR) {
+				short otype = priOther.getPrimitiveType();
+				if (otype == CSSPrimitiveValue.CSS_RGBCOLOR) {
+					RGBAColor color = pri.getRGBColorValue();
+					RGBAColor otherColor = priOther.getRGBColorValue();
+					if (similarComponentValues(color.getRed(), otherColor.getRed())
+							&& similarComponentValues(color.getGreen(), otherColor.getGreen())
+							&& similarComponentValues(color.getBlue(), otherColor.getBlue())
+							&& Math.abs(color.getAlpha().getFloatValue(CSSPrimitiveValue.CSS_NUMBER)
+									- otherColor.getAlpha().getFloatValue(CSSPrimitiveValue.CSS_NUMBER)) < 0.01f) {
+						return 1;
+					} else {
+						return 2;
+					}
+				} else if (otype == CSSPrimitiveValue.CSS_IDENT
+						&& "transparent".equalsIgnoreCase(priOther.getStringValue())) {
+					String cssText = pri.getMinifiedCssText("");
+					if ("rgba(0,0,0,0)".equals(cssText) || "rgb(0 0 0/0)".equals(cssText)) {
+						return 1;
+					}
 					return 2;
 				}
 			} else if (pri.getPrimitiveType() == CSSPrimitiveValue.CSS_URI

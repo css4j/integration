@@ -151,28 +151,37 @@ public class SampleSitesTest {
 
 	@Test
 	public void testIsNotDifferentColor() {
-		styleDecl.setCssText("background: hsl(207, 6%, 61% / 0.6);");
+		styleDecl.setCssText("background-color: hsl(207 6% 61% / 0.6);");
 		AbstractCSSValue value = styleDecl.getPropertyCSSValue("background-color");
 		ValueFactory factory = new ValueFactory();
-		AbstractCSSValue other = factory.parseProperty("rgb(59%, 61%, 63% / 0.6)");
+		AbstractCSSValue other = factory.parseProperty("rgb(59% 61% 63% / 0.6)");
 		assertTrue(comparator.isNotDifferent("background-color", value, other));
 	}
 
 	@Test
 	public void testIsNotDifferentColor2() {
-		styleDecl.setCssText("background: hsl(24, 20%, 50% / 0);");
+		styleDecl.setCssText("background-color: hsl(24 20% 50% / 0);");
 		AbstractCSSValue value = styleDecl.getPropertyCSSValue("background-color");
 		ValueFactory factory = new ValueFactory();
-		AbstractCSSValue other = factory.parseProperty("rgb(60%, 48%, 40% / 0)");
+		AbstractCSSValue other = factory.parseProperty("rgb(60% 48% 40% / 0)");
 		assertTrue(comparator.isNotDifferent("background-color", value, other));
 	}
 
 	@Test
 	public void testIsNotDifferentColor3() {
-		styleDecl.setCssText("background: hsl(0, 0%, 95%);");
+		styleDecl.setCssText("background-color: hsl(0, 0%, 95%);");
 		AbstractCSSValue value = styleDecl.getPropertyCSSValue("background-color");
 		ValueFactory factory = new ValueFactory();
 		AbstractCSSValue other = factory.parseProperty("#f2f2f2");
+		assertTrue(comparator.isNotDifferent("background-color", value, other));
+	}
+
+	@Test
+	public void testIsNotDifferentColor4() {
+		styleDecl.setCssText("background-color: rgba(0,0,0,0);");
+		AbstractCSSValue value = styleDecl.getPropertyCSSValue("background-color");
+		ValueFactory factory = new ValueFactory();
+		AbstractCSSValue other = factory.parseProperty("transparent");
 		assertTrue(comparator.isNotDifferent("background-color", value, other));
 	}
 
@@ -218,10 +227,10 @@ public class SampleSitesTest {
 
 	@Test
 	public void testIsNotDifferentGradient() {
-		styleDecl.setCssText("background-image: linear-gradient(left, hsl(24, 20%, 50% / 0.1) 70%, hsl(24, 20%, 50% / 0))");
+		styleDecl.setCssText("background-image: linear-gradient(left, hsl(24 20% 50% / 0.1) 70%, hsl(24 20% 50% / 0))");
 		AbstractCSSValue value = styleDecl.getPropertyCSSValue("background-image");
 		ValueFactory factory = new ValueFactory();
-		AbstractCSSValue other = factory.parseProperty("linear-gradient(left, hsl(24, 20%, 50% / 0.1) 70%, rgb(60%, 48%, 40% / 0))");
+		AbstractCSSValue other = factory.parseProperty("linear-gradient(left, hsl(24 20% 50% / 0.1) 70%, rgb(60% 48% 40% / 0))");
 		assertTrue(comparator.isNotDifferent("background-image", value, other));
 	}
 
