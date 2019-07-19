@@ -362,13 +362,6 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 					writeError("Computed style error: " + it.next().toString());
 				}
 			}
-			LinkedList<String> emptyRules = dseh.getEmptyStyleRules();
-			if (emptyRules != null) {
-				Iterator<String> it = emptyRules.iterator();
-				while (it.hasNext()) {
-					writeError("Empty style rule with selector: " + it.next());
-				}
-			}
 			LinkedList<String> ignoredImports = dseh.getIgnoredImports();
 			if (ignoredImports != null) {
 				Iterator<String> it = ignoredImports.iterator();
@@ -388,6 +381,13 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 				Iterator<RuleParseError> it = rpe.iterator();
 				while (it.hasNext()) {
 					writeError("Rule parsing error: " + it.next().toString());
+				}
+			}
+			LinkedList<String> emptyRules = dseh.getEmptyStyleRules();
+			if (emptyRules != null) {
+				Iterator<String> it = emptyRules.iterator();
+				while (it.hasNext()) {
+					writeWarning("Empty style rule with selector: " + it.next());
 				}
 			}
 		}

@@ -70,9 +70,9 @@ import io.sf.carte.doc.style.css.CSSComputedProperties;
 import io.sf.carte.doc.style.css.CSSDeclarationRule;
 import io.sf.carte.doc.style.css.CSSDocument;
 import io.sf.carte.doc.style.css.CSSElement;
+import io.sf.carte.doc.style.css.CSSStyleSheetList;
 import io.sf.carte.doc.style.css.ExtendedCSSRule;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
-import io.sf.carte.doc.style.css.CSSStyleSheetList;
 import io.sf.carte.doc.style.css.nsac.Parser2;
 import io.sf.carte.doc.style.css.om.AbstractCSSRule;
 import io.sf.carte.doc.style.css.om.AbstractCSSStyleSheet;
@@ -351,16 +351,17 @@ public class SampleSitesIT {
 						}
 					}
 				}
-				if (errHandler.hasOMErrors()) {
+				if (errHandler.hasOMErrors() || errHandler.hasOMWarnings()) {
 					reporter.omIssues(sheet, i, errHandler);
-					if (errHandler.getBadAtRules() != null || errHandler.getBadInlineStyles() != null
-							|| errHandler.getBadMediaLists() != null || errHandler.getComputedStyleErrors() != null
-							|| errHandler.getRuleParseErrors() != null || errHandler.getUnknownRules() != null) {
+					if (errHandler.hasOMErrors()) {
 						hasErrors = true;
 					}
 				}
 				if (errHandler.hasSacErrors() || errHandler.hasSacWarnings()) {
 					reporter.sacIssues(sheet, i, errHandler);
+					if (errHandler.hasSacErrors()) {
+						hasErrors = true;
+					}
 				}
 			}
 		}

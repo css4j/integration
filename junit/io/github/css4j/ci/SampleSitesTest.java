@@ -16,8 +16,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.github.css4j.ci.SampleSitesIT;
-import io.github.css4j.ci.ValueComparator;
 import io.sf.carte.doc.dom.DOMBridge;
 import io.sf.carte.doc.style.css.om.AbstractCSSStyleSheet;
 import io.sf.carte.doc.style.css.om.BaseCSSStyleDeclaration;

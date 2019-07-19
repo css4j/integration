@@ -29,10 +29,10 @@ import io.sf.carte.doc.style.css.om.BaseCSSStyleDeclaration;
 import io.sf.carte.doc.style.css.om.CSSOMBridge;
 import io.sf.carte.doc.style.css.parser.ParseHelper;
 import io.sf.carte.doc.style.css.property.AbstractCSSValue;
-import io.sf.carte.doc.style.css.property.CSSNumberValue;
-import io.sf.carte.doc.style.css.property.CSSURIValue;
-import io.sf.carte.doc.style.css.property.ValueList;
+import io.sf.carte.doc.style.css.property.NumberValue;
 import io.sf.carte.doc.style.css.property.PropertyDatabase;
+import io.sf.carte.doc.style.css.property.URIValue;
+import io.sf.carte.doc.style.css.property.ValueList;
 
 class ValueComparator {
 
@@ -156,8 +156,8 @@ class ValueComparator {
 				}
 			} else if (pri.getPrimitiveType() == CSSPrimitiveValue.CSS_URI
 					&& priOther.getPrimitiveType() == CSSPrimitiveValue.CSS_URI) {
-				CSSURIValue uri = (CSSURIValue) pri;
-				CSSURIValue uriOther = (CSSURIValue) priOther;
+				URIValue uri = (URIValue) pri;
+				URIValue uriOther = (URIValue) priOther;
 				if (isSameURI(pri, priOther) || uri.isEquivalent(uriOther)) {
 					return 1;
 				} else {
@@ -442,9 +442,9 @@ class ValueComparator {
 	}
 
 	private static boolean isApproximateNumericValue(ExtendedCSSValue value, ExtendedCSSValue minivalue) {
-		if (value instanceof CSSNumberValue && minivalue instanceof CSSNumberValue) {
-			CSSNumberValue num = (CSSNumberValue) value;
-			CSSNumberValue mininum = (CSSNumberValue) minivalue;
+		if (value instanceof NumberValue && minivalue instanceof NumberValue) {
+			NumberValue num = (NumberValue) value;
+			NumberValue mininum = (NumberValue) minivalue;
 			int val = Math.round(num.getFloatValue(num.getPrimitiveType()) * 1000f);
 			int minival = Math.round(mininum.getFloatValue(mininum.getPrimitiveType()) * 1000f);
 			if (val == 0 && minival == 0) {
