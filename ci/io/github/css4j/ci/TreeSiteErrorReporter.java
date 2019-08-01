@@ -22,21 +22,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
-import java.util.List;
-import java.util.ListIterator;
 
 import org.dom4j.dom.DOMElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.css.sac.CSSParseException;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.css.CSSStyleSheet;
 import org.w3c.dom.stylesheets.StyleSheet;
 
 import io.sf.carte.doc.style.css.CSSElement;
-import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
-import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler;
 
 public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 
@@ -294,33 +289,6 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 			path = "-";
 		}
 		return path;
-	}
-
-	@Override
-	public void sacIssues(CSSStyleSheet sheet, int sheetIndex, SACErrorHandler errHandler) {
-		selectTargetSheet(sheet, sheetIndex, !errHandler.hasSacErrors());
-		writeError(errHandler.toString());
-		if (errHandler instanceof DefaultSheetErrorHandler) {
-			DefaultSheetErrorHandler dseh = (DefaultSheetErrorHandler) errHandler;
-			List<CSSParseException> sacErrors = dseh.getSacErrors();
-			if (sacErrors != null) {
-				ListIterator<CSSParseException> it = sacErrors.listIterator();
-				while (it.hasNext()) {
-					CSSParseException ex = it.next();
-					writeError("SAC error at [" + ex.getLineNumber() + "," + ex.getColumnNumber() + "]: "
-							+ ex.getMessage());
-				}
-			}
-			List<CSSParseException> sacWarnings = dseh.getSacWarnings();
-			if (sacWarnings != null) {
-				ListIterator<CSSParseException> it = sacWarnings.listIterator();
-				while (it.hasNext()) {
-					CSSParseException ex = it.next();
-					writeWarning("SAC warning at [" + ex.getLineNumber() + "," + ex.getColumnNumber() + "]: "
-							+ ex.getMessage());
-				}
-			}
-		}
 	}
 
 	@Override
