@@ -23,12 +23,12 @@ import io.sf.carte.doc.style.css.CSSGradientValue;
 import io.sf.carte.doc.style.css.CSSPrimitiveValue2;
 import io.sf.carte.doc.style.css.ExtendedCSSPrimitiveValue;
 import io.sf.carte.doc.style.css.ExtendedCSSValue;
-import io.sf.carte.doc.style.css.ExtendedCSSValueList;
 import io.sf.carte.doc.style.css.RGBAColor;
 import io.sf.carte.doc.style.css.om.BaseCSSStyleDeclaration;
 import io.sf.carte.doc.style.css.om.CSSOMBridge;
 import io.sf.carte.doc.style.css.parser.ParseHelper;
 import io.sf.carte.doc.style.css.property.AbstractCSSValue;
+import io.sf.carte.doc.style.css.property.LinkedCSSValueList;
 import io.sf.carte.doc.style.css.property.NumberValue;
 import io.sf.carte.doc.style.css.property.PropertyDatabase;
 import io.sf.carte.doc.style.css.property.URIValue;
@@ -178,12 +178,8 @@ class ValueComparator {
 				if (gradient.getGradientType() != gradientOther.getGradientType()) {
 					return 2;
 				}
-				@SuppressWarnings("unchecked")
-				ExtendedCSSValueList<AbstractCSSValue> args = (ExtendedCSSValueList<AbstractCSSValue>) gradient
-						.getArguments();
-				@SuppressWarnings("unchecked")
-				ExtendedCSSValueList<AbstractCSSValue> argsOther = (ExtendedCSSValueList<AbstractCSSValue>) gradientOther
-						.getArguments();
+				LinkedCSSValueList args = gradient.getArguments();
+				LinkedCSSValueList argsOther = gradientOther.getArguments();
 				if (args.getLength() != argsOther.getLength()) {
 					return 2;
 				}
