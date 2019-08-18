@@ -31,8 +31,8 @@ import io.sf.carte.doc.style.css.CSSElement;
 import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
+import io.sf.carte.doc.style.css.om.DefaultErrorHandler.ComputedStyleError;
 import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler;
-import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler.ComputedStyleError;
 import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler.RuleParseError;
 import io.sf.carte.doc.style.css.om.DefaultStyleDeclarationErrorHandler;
 
@@ -160,6 +160,11 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	@Override
 	public void inlineStyleError(CSSElement owner, StyleDeclarationErrorHandler styleHandler) {
 		writeError(styleHandler.toString());
+	}
+
+	@Override
+	public void computedStyleError(ComputedStyleError cse) {
+		writeError("Computed style error: " + cse.toString());
 	}
 
 	@Override
@@ -356,13 +361,6 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 				Iterator<String> it = badInline.iterator();
 				while (it.hasNext()) {
 					writeError("Error parsing inline style: " + it.next());
-				}
-			}
-			LinkedList<ComputedStyleError> cse = dseh.getComputedStyleErrors();
-			if (cse != null) {
-				Iterator<ComputedStyleError> it = cse.iterator();
-				while (it.hasNext()) {
-					writeError("Computed style error: " + it.next().toString());
 				}
 			}
 			LinkedList<String> ignoredImports = dseh.getIgnoredImports();

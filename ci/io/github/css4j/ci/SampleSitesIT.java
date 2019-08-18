@@ -58,6 +58,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import io.sf.carte.doc.DocumentException;
+import io.sf.carte.doc.agent.DeviceFactory;
 import io.sf.carte.doc.agent.net.DefaultOriginPolicy;
 import io.sf.carte.doc.agent.net.DefaultUserAgent;
 import io.sf.carte.doc.dom.CSSDOMImplementation;
@@ -70,7 +71,9 @@ import io.sf.carte.doc.style.css.CSSComputedProperties;
 import io.sf.carte.doc.style.css.CSSDeclarationRule;
 import io.sf.carte.doc.style.css.CSSDocument;
 import io.sf.carte.doc.style.css.CSSElement;
+import io.sf.carte.doc.style.css.CSSMediaException;
 import io.sf.carte.doc.style.css.CSSStyleSheetList;
+import io.sf.carte.doc.style.css.ErrorHandler;
 import io.sf.carte.doc.style.css.ExtendedCSSRule;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
 import io.sf.carte.doc.style.css.nsac.Parser2;
@@ -85,7 +88,9 @@ import io.sf.carte.doc.style.css.om.CSSStyleDeclarationRule;
 import io.sf.carte.doc.style.css.om.ComputedCSSStyle;
 import io.sf.carte.doc.style.css.om.DOMCSSStyleSheetFactory;
 import io.sf.carte.doc.style.css.om.DefaultErrorHandler;
+import io.sf.carte.doc.style.css.om.DefaultErrorHandler.ComputedStyleError;
 import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler;
+import io.sf.carte.doc.style.css.om.DummyDeviceFactory;
 import io.sf.carte.doc.style.css.om.GroupingRule;
 import io.sf.carte.doc.style.css.om.StylableDocumentWrapper;
 import io.sf.carte.doc.style.css.om.StyleSheetList;
@@ -311,7 +316,15 @@ public class SampleSitesIT {
 		factory.setDefaultHTMLUserAgentSheet();
 		CSSDocument wrappedHtml = factory.createCSSDocument(document);
 		reporter.setSideDescriptions("Native implementation", "DOM wrapper");
-		checkTree(html, wrappedHtml.getDocumentElement(), wrappedHtml, "DOM wrapper", true);
+		int count = checkTree(html, wrappedHtml.getDocumentElement(), wrappedHtml, "DOM wrapper", true);
+		// Check the computed styles
+		try {
+			document.setTargetMedium("screen");
+		} catch (CSSMediaException e) {
+		}
+		if (count < 1000) {
+			computeStyles(html);
+		}
 		// Report style issues
 		if (document.hasStyleIssues()) {
 			StyleSheetList list = document.getStyleSheets();
@@ -738,10 +751,11 @@ public class SampleSitesIT {
 		return true;
 	}
 
-	private void checkTree(DOMElement elm, CSSElement otherdocElm, CSSDocument docToCompare, String backendName,
+	private int checkTree(DOMElement elm, CSSElement otherdocElm, CSSDocument docToCompare, String backendName,
 			boolean ignoreNonCssHints) throws IOException {
 		if (!compareComputedStyles(elm, otherdocElm, docToCompare, backendName, ignoreNonCssHints)) {
 			reporter.fail("Different computed styles found");
+			return 0;
 		}
 		NodeList list = elm.getChildNodes();
 		NodeList dom4jList = otherdocElm.getChildNodes();
@@ -749,7 +763,9 @@ public class SampleSitesIT {
 		if (sz != dom4jList.getLength()) {
 			compareChildList(list, dom4jList, elm);
 			reporter.fail("Different number of child at element " + elm.getTagName() + " for " + backendName);
+			return 0;
 		}
+		int count = 0;
 		int delta = 0;
 		for (int i = 0; i < sz; i++) {
 			Node node = list.item(i);
@@ -763,9 +779,11 @@ public class SampleSitesIT {
 				if (!node.getLocalName().equalsIgnoreCase(dom4jNode.getLocalName())) {
 					assertEquals(node.getLocalName(), dom4jNode.getLocalName());
 				}
-				checkTree((DOMElement) node, (CSSElement) dom4jNode, docToCompare, backendName, ignoreNonCssHints);
+				count++;
+				count += checkTree((DOMElement) node, (CSSElement) dom4jNode, docToCompare, backendName, ignoreNonCssHints);
 			}
 		}
+		return count;
 	}
 
 	private boolean compareComputedStyles(DOMElement elm, CSSElement otherdocElm, CSSDocument docToCompare,
@@ -821,6 +839,7 @@ public class SampleSitesIT {
 				}
 				if (!retval) {
 					reporter.fail("Tree comparison failed, first document had more properties", elm, left, backendName);
+					return false;
 				}
 			}
 			if (right != null) {
@@ -857,10 +876,12 @@ public class SampleSitesIT {
 				if (!retval) {
 					reporter.fail("Tree comparison failed: " + backendName + " has more properties.", elm, right,
 							backendName);
+					return false;
 				}
 			}
 			String[] different = diff.getDifferent();
 			if (different != null) {
+				diff = ((BaseCSSStyleDeclaration) style).diff((BaseCSSStyleDeclaration) otherStyle);
 				sheets = document.getStyleSheets();
 				CSSStyleSheetList<? extends ExtendedCSSRule> otherSheets = docToCompare.getStyleSheets();
 				for (int i = 0; i < different.length; i++) {
@@ -915,6 +936,30 @@ public class SampleSitesIT {
 			reporter.fail(failinfo);
 		}
 		return retval;
+	}
+
+	private void computeStyles(DOMElement element) {
+		ComputedCSSStyle style = element.getComputedStyle(null);
+		int len = style.getLength();
+		for (int i = 0; i < len; i++) {
+			String propertyName = style.item(i);
+			AbstractCSSValue value = style.getPropertyCSSValue(propertyName);
+			assertNotNull(value);
+		}
+		ErrorHandler eh = element.getOwnerDocument().getErrorHandler();
+		if (eh.hasComputedStyleErrors()) {
+			LinkedList<ComputedStyleError> cselist = ((DefaultErrorHandler) eh).getComputedStyleErrors();
+			Iterator<ComputedStyleError> it = cselist.iterator();
+			while (it.hasNext()) {
+				ComputedStyleError cse = it.next();
+				reporter.computedStyleError(cse);
+			}
+		}
+		Iterator<DOMElement> it = element.elementIterator();
+		while (it.hasNext()) {
+			DOMElement elm = it.next();
+			computeStyles(elm);
+		}
 	}
 
 	private LinkedList<Selector> unmatchedSelectors(Selector[] sel, CSSElement elm, CSSElement otherdocElm,
@@ -996,6 +1041,8 @@ public class SampleSitesIT {
 	class MyDOMUserAgent extends DefaultUserAgent {
 		MyDOMUserAgent() {
 			super(parserFlags, true);
+			DeviceFactory deviceFactory = new DummyDeviceFactory();
+			getDOMImplementation().setDeviceFactory(deviceFactory);
 		}
 
 		@Override

@@ -27,6 +27,7 @@ import io.sf.carte.doc.style.css.CSSElement;
 import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
+import io.sf.carte.doc.style.css.om.DefaultErrorHandler.ComputedStyleError;
 
 public interface SiteErrorReporter {
 
@@ -47,6 +48,8 @@ public interface SiteErrorReporter {
 	void inlineStyleError(CSSElement owner, Exception exception, String style);
 
 	void inlineStyleError(CSSElement owner, StyleDeclarationErrorHandler styleHandler);
+
+	void computedStyleError(ComputedStyleError cse);
 
 	void minifiedMissingProperty(CSSStyleSheet parent, int ruleIndex, String cssText, String miniCssText,
 			String property, String propertyValue);
