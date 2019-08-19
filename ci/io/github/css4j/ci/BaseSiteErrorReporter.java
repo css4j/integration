@@ -31,10 +31,10 @@ import io.sf.carte.doc.style.css.CSSElement;
 import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
-import io.sf.carte.doc.style.css.om.DefaultErrorHandler.ComputedStyleError;
 import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler;
 import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler.RuleParseError;
 import io.sf.carte.doc.style.css.om.DefaultStyleDeclarationErrorHandler;
+import io.sf.carte.doc.style.css.property.CSSPropertyValueException;
 
 abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 
@@ -163,8 +163,8 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void computedStyleError(ComputedStyleError cse) {
-		writeError("Computed style error: " + cse.toString());
+	public void computedStyleError(CSSElement element, String propertyName, CSSPropertyValueException ex) {
+		writeError("Computed style error (" + element.getTagName() + "/" + propertyName + "): " + ex.getMessage());
 	}
 
 	@Override

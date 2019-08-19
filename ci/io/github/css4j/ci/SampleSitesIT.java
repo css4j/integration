@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -88,7 +89,6 @@ import io.sf.carte.doc.style.css.om.CSSStyleDeclarationRule;
 import io.sf.carte.doc.style.css.om.ComputedCSSStyle;
 import io.sf.carte.doc.style.css.om.DOMCSSStyleSheetFactory;
 import io.sf.carte.doc.style.css.om.DefaultErrorHandler;
-import io.sf.carte.doc.style.css.om.DefaultErrorHandler.ComputedStyleError;
 import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler;
 import io.sf.carte.doc.style.css.om.DummyDeviceFactory;
 import io.sf.carte.doc.style.css.om.GroupingRule;
@@ -96,6 +96,7 @@ import io.sf.carte.doc.style.css.om.StylableDocumentWrapper;
 import io.sf.carte.doc.style.css.om.StyleSheetList;
 import io.sf.carte.doc.style.css.om.TestCSSStyleSheetFactory;
 import io.sf.carte.doc.style.css.property.AbstractCSSValue;
+import io.sf.carte.doc.style.css.property.CSSPropertyValueException;
 import io.sf.carte.doc.xml.dtd.DefaultEntityResolver;
 import io.sf.carte.net.NetCache;
 import io.sf.carte.util.Diff;
@@ -948,11 +949,11 @@ public class SampleSitesIT {
 		}
 		ErrorHandler eh = element.getOwnerDocument().getErrorHandler();
 		if (eh.hasComputedStyleErrors()) {
-			LinkedList<ComputedStyleError> cselist = ((DefaultErrorHandler) eh).getComputedStyleErrors();
-			Iterator<ComputedStyleError> it = cselist.iterator();
+			HashMap<String, CSSPropertyValueException> csemap = ((DefaultErrorHandler) eh).getComputedStyleErrors(element);
+			Iterator<Entry<String, CSSPropertyValueException>> it = csemap.entrySet().iterator();
 			while (it.hasNext()) {
-				ComputedStyleError cse = it.next();
-				reporter.computedStyleError(cse);
+				Entry<String, CSSPropertyValueException> entry = it.next();
+				reporter.computedStyleError(element, entry.getKey(), entry.getValue());
 			}
 		}
 		Iterator<DOMElement> it = element.elementIterator();
