@@ -131,7 +131,7 @@ public class NetCache {
 		PrintStream wri = new PrintStream(new FileOutputStream(metadata, true));
 		wri.append(encodedUrl);
 		wri.append(' ');
-		wri.printf(Locale.US, "%10d", contentLen);
+		wri.printf(Locale.ROOT, "%10d", contentLen);
 		wri.append(' ');
 		wri.append(url.getFile());
 		String query = url.getQuery();
@@ -168,7 +168,7 @@ public class NetCache {
 					break;
 				}
 				int klen = line.indexOf(':');
-				headers.put(line.substring(0, klen).toLowerCase(Locale.US), line.substring(klen + 1));
+				headers.put(line.substring(0, klen).toLowerCase(Locale.ROOT), line.substring(klen + 1));
 			} while(true);
 			contentLength = inputStream.available();
 		}
@@ -197,7 +197,7 @@ public class NetCache {
 
 		@Override
 		public String getHeaderField(String name) {
-			return headers.get(name.toLowerCase(Locale.US));
+			return headers.get(name.toLowerCase(Locale.ROOT));
 		}
 
 		@Override
