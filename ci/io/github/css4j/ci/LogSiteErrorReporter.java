@@ -30,6 +30,7 @@ public class LogSiteErrorReporter extends BaseSiteErrorReporter {
 	final static Logger log = LoggerFactory.getLogger(LogSiteErrorReporter.class.getName());
 
 	private int lastSheetIndex = -1;
+	private int lastWarningSheetIndex = -1;
 
 	@Override
 	public void startSiteReport(URL url) throws IOException {
@@ -66,24 +67,36 @@ public class LogSiteErrorReporter extends BaseSiteErrorReporter {
 	}
 
 	@Override
-	void selectTargetSheet(StyleSheet sheet, int sheetIndex, boolean warn) {
+	void selectErrorTargetSheet(StyleSheet sheet, int sheetIndex) {
 		if (lastSheetIndex != sheetIndex) {
-			CSSElement owner;
-			if ((owner = (CSSElement) sheet.getOwnerNode()) != null && "style".equalsIgnoreCase(owner.getTagName())) {
-				String text;
-				if (owner instanceof DOMElement) {
-					text = ((DOMElement) owner).getText();
-				} else {
-					text = owner.getTextContent();
-				}
-				writeWarning("Sheet:\n" + text);
-			} else {
-				String uri = sheet.getHref();
-				if (uri != null) {
-					writeWarning("Sheet at " + uri);
-				}
-			}
+			selectTargetSheet(sheet, sheetIndex, false);
 			lastSheetIndex = sheetIndex;
+		}
+	}
+
+	@Override
+	void selectWarningTargetSheet(StyleSheet sheet, int sheetIndex) {
+		if (lastWarningSheetIndex != sheetIndex) {
+			selectTargetSheet(sheet, sheetIndex, true);
+			lastWarningSheetIndex = sheetIndex;
+		}
+	}
+
+	private void selectTargetSheet(StyleSheet sheet, int sheetIndex, boolean warn) {
+		CSSElement owner;
+		if ((owner = (CSSElement) sheet.getOwnerNode()) != null && "style".equalsIgnoreCase(owner.getTagName())) {
+			String text;
+			if (owner instanceof DOMElement) {
+				text = ((DOMElement) owner).getText();
+			} else {
+				text = owner.getTextContent();
+			}
+			writeWarning("Sheet:\n" + text);
+		} else {
+			String uri = sheet.getHref();
+			if (uri != null) {
+				writeWarning("Sheet at " + uri);
+			}
 		}
 	}
 

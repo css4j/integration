@@ -180,11 +180,10 @@ public class SampleSitesIT {
 				if (failfile.exists()) {
 					File oldfailfile = new File(failfile.getAbsolutePath() + ".old");
 					try {
-						Files.copy(failfile.toPath(), oldfailfile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+						Files.move(failfile.toPath(), oldfailfile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-					failfile.delete();
 				}
 			}
 		} else {

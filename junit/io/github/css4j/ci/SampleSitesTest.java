@@ -250,4 +250,13 @@ public class SampleSitesTest {
 		assertTrue(comparator.isNotDifferent("transform", value, other));
 	}
 
+	@Test
+	public void testIsNotDifferentList() {
+		styleDecl.setCssText("border-image-slice: 10;");
+		AbstractCSSValue value = styleDecl.getPropertyCSSValue("border-image-slice");
+		ValueFactory factory = new ValueFactory();
+		AbstractCSSValue other = factory.parseProperty("10 10");
+		assertTrue(comparator.isNotDifferent("border-image-slice", value, other));
+	}
+
 }

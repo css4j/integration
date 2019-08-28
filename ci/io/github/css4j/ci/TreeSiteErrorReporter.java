@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 import org.dom4j.dom.DOMElement;
 import org.slf4j.Logger;
@@ -43,11 +44,13 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 	private FileChannel mainchannel;
 	private FileChannel minichannel;
 	private PrintWriter mainwriter = null;
+	private PrintWriter warningwriter = null;
 	private PrintWriter miniwriter = null;
 	private PrintWriter serialwriter = null;
 	private FileDescriptor mainfd;
 	private FileDescriptor minifd;
 	private int lastSheetIndex = -1;
+	private int lastWarningSheetIndex = -1;
 
 	@Override
 	public void startSiteReport(URL url) throws IOException {
@@ -55,17 +58,13 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 		hostdir = SampleSitesIT.getHostDirectory(url);
 		filename = SampleSitesIT.encodeString(url.toExternalForm()).substring(0, 10);
 		File mainfile = getMainFile();
+		File warningfile = getWarningFile();
 		File minifile = getMinificationFile();
 		File serialfile = getSerializationFile();
-		if (mainfile.exists()) {
-			Files.delete(mainfile.toPath());
-		}
-		if (minifile.exists()) {
-			Files.delete(minifile.toPath());
-		}
-		if (serialfile.exists()) {
-			Files.delete(serialfile.toPath());
-		}
+		resetFile(mainfile);
+		resetFile(warningfile);
+		resetFile(minifile);
+		resetFile(serialfile);
 	}
 
 	static File getGlobalFile(File cachedir) {
@@ -76,12 +75,23 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 		return new File(hostdir, filename + ".log");
 	}
 
+	File getWarningFile() {
+		return new File(hostdir, filename + ".warn");
+	}
+
 	File getMinificationFile() {
 		return new File(hostdir, filename + "-mini.err");
 	}
 
 	File getSerializationFile() {
 		return new File(hostdir, filename + "-rule.err");
+	}
+
+	void resetFile(File file) throws IOException {
+		if (file.exists()) {
+			File oldfile = new File(file.getAbsolutePath() + ".old");
+			Files.move(file.toPath(), oldfile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}
 	}
 
 	@Override
@@ -184,8 +194,8 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 
 	@Override
 	void writeWarning(String message) {
-		enableMainWriter();
-		mainwriter.println("WARNING: " + message);
+		enableWarningWriter();
+		warningwriter.println(message);
 	}
 
 	private void enableMainWriter() {
@@ -197,6 +207,17 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 				mainwriter = new PrintWriter(new OutputStreamWriter(out, "utf-8"));
 			} catch (IOException e) {
 				log.error("Unable to write to " + getMainFile().getAbsolutePath(), e);
+			}
+		}
+	}
+
+	private void enableWarningWriter() {
+		if (warningwriter == null) {
+			try {
+				FileOutputStream out = new FileOutputStream(getWarningFile());
+				warningwriter = new PrintWriter(new OutputStreamWriter(out, "utf-8"));
+			} catch (IOException e) {
+				log.error("Unable to write to " + getWarningFile().getAbsolutePath(), e);
 			}
 		}
 	}
@@ -241,41 +262,64 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 	}
 
 	@Override
-	void selectTargetSheet(StyleSheet sheet, int sheetIndex, boolean warn) {
+	void selectErrorTargetSheet(StyleSheet sheet, int sheetIndex) {
 		if (lastSheetIndex != sheetIndex) {
-			CSSElement owner;
-			if ((owner = (CSSElement) sheet.getOwnerNode()) != null && "style".equalsIgnoreCase(owner.getTagName())) {
-				String text;
-				if (owner instanceof DOMElement) {
-					text = ((DOMElement) owner).getText();
-				} else {
-					text = owner.getTextContent();
-				}
-				text = text.trim();
-				if (text.length() != 0) {
-					String filename = SampleSitesIT.encodeString(text).substring(0, 8);
-					File sheetfile = new File(hostdir, filename + ".css");
-					FileOutputStream out = null;
-					try {
-						out = new FileOutputStream(sheetfile);
-						out.write(text.getBytes("utf-8"));
-					} catch (IOException e) {
-					} finally {
-						if (out != null) {
-							try {
-								out.close();
-							} catch (IOException e) {
-							}
+			selectTargetSheet(sheet, sheetIndex, false);
+			lastSheetIndex = sheetIndex;
+		}
+	}
+
+	@Override
+	void selectWarningTargetSheet(StyleSheet sheet, int sheetIndex) {
+		if (lastWarningSheetIndex != sheetIndex) {
+			selectTargetSheet(sheet, sheetIndex, true);
+			lastWarningSheetIndex = sheetIndex;
+		}
+	}
+
+	private void selectTargetSheet(StyleSheet sheet, int sheetIndex, boolean warn) {
+		CSSElement owner;
+		if ((owner = (CSSElement) sheet.getOwnerNode()) != null && "style".equalsIgnoreCase(owner.getTagName())) {
+			// Embedded sheet
+			String text;
+			if (owner instanceof DOMElement) {
+				text = ((DOMElement) owner).getText();
+			} else {
+				text = owner.getTextContent();
+			}
+			text = text.trim();
+			if (text.length() != 0) {
+				String filename = SampleSitesIT.encodeString(text).substring(0, 8);
+				File sheetfile = new File(hostdir, filename + ".css");
+				FileOutputStream out = null;
+				try {
+					out = new FileOutputStream(sheetfile);
+					out.write(text.getBytes("utf-8"));
+				} catch (IOException e) {
+				} finally {
+					if (out != null) {
+						try {
+							out.close();
+						} catch (IOException e) {
 						}
 					}
-					writeWarning("Sheet: " + sheetfile.getAbsolutePath());
 				}
-			} else {
-				String uri = sheet.getHref();
-				String path = getLinkedSheetInternalPath(sheet, uri);
-				writeWarning("Sheet at " + uri + "\npath: " + path);
+				String msg = "Sheet: " + sheetfile.getAbsolutePath();
+				if (warn) {
+					writeWarning(msg);
+				} else {
+					writeError(msg);
+				}
 			}
-			lastSheetIndex = sheetIndex;
+		} else {
+			String uri = sheet.getHref();
+			String path = getLinkedSheetInternalPath(sheet, uri);
+			String msg = "Sheet at " + uri + "\npath: " + path;
+			if (warn) {
+				writeWarning(msg);
+			} else {
+				writeError(msg);
+			}
 		}
 	}
 
@@ -296,6 +340,13 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 		if (serialwriter != null) {
 			serialwriter.flush();
 			serialwriter.close();
+		}
+		if (warningwriter != null) {
+			if (warningwriter.checkError()) {
+				log.error("Problems writing to " + getWarningFile().getAbsolutePath());
+			}
+			warningwriter.close();
+			warningwriter = null;
 		}
 		if (mainwriter != null) {
 			if (mainwriter.checkError()) {

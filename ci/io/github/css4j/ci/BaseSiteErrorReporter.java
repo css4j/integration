@@ -28,6 +28,7 @@ import org.w3c.dom.stylesheets.StyleSheet;
 
 import io.sf.carte.doc.dom.DOMElement;
 import io.sf.carte.doc.style.css.CSSElement;
+import io.sf.carte.doc.style.css.ExtendedCSSRule;
 import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
@@ -53,7 +54,9 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 
 	abstract void writeWarning(String message);
 
-	abstract void selectTargetSheet(StyleSheet sheet, int sheetIndex, boolean warn);
+	abstract void selectErrorTargetSheet(StyleSheet sheet, int sheetIndex);
+
+	abstract void selectWarningTargetSheet(StyleSheet sheet, int sheetIndex);
 
 	@Override
 	public void setSideDescriptions(String leftSide, String rightSide) {
@@ -109,13 +112,13 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 		while (it.hasNext()) {
 			CSSStyleSheet sheet = it.next();
 			StringBuilder sb = new StringBuilder(128);
-			sb.append("Missing sheet in ").append(rightSide).append(", href ").append(sheet.getHref());
+			sb.append("The sheet is not in ").append(rightSide).append(", href ").append(sheet.getHref());
 			Node owner = sheet.getOwnerNode();
 			if (owner != null) {
 				sb.append(", owner: ").append(owner.getNodeName());
 			}
+			selectErrorTargetSheet(sheet, -2);
 			writeError(sb.toString());
-			selectTargetSheet(sheet, -2, false);
 		}
 	}
 
@@ -127,13 +130,13 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 		while (it.hasNext()) {
 			CSSStyleSheet sheet = it.next();
 			StringBuilder sb = new StringBuilder(128);
-			sb.append("Missing sheet in ").append(leftSide).append(", href ").append(sheet.getHref());
+			sb.append("The sheet is not in ").append(leftSide).append(", href ").append(sheet.getHref());
 			Node owner = sheet.getOwnerNode();
 			if (owner != null) {
 				sb.append(", owner: ").append(owner.getNodeName());
 			}
+			selectErrorTargetSheet(sheet, -3);
 			writeError(sb.toString());
-			selectTargetSheet(sheet, -3, false);
 		}
 	}
 
@@ -279,7 +282,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	public void unmatchedLeftSelector(StyleSheet sheet, int sheetIndex, DOMElement elm, String property,
 			String propertyValue, LinkedList<Selector> selectorList, LinkedList<Selector> unmatched) {
 		writeError("Failing due to issue in sheet:");
-		selectTargetSheet(sheet, sheetIndex, false);
+		selectErrorTargetSheet(sheet, sheetIndex);
 		writeError("Failing due to issue with style on element: " + elm.getStartTag());
 		writeError(rightSide + " comparison: on element <" + elm.getTagName() + ">, property " + property
 				+ " with value '" + propertyValue + "' found only in first document's sheet " + sheetIndex);
@@ -294,7 +297,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	public void unmatchedRightSelector(StyleSheet sheet, int sheetIndex, DOMElement elm, String property,
 			String propertyValue, LinkedList<Selector> selectorList, LinkedList<Selector> unmatched) {
 		writeError("Trouble with property specified in sheet (" + rightSide + "):");
-		selectTargetSheet(sheet, sheetIndex, false);
+		selectErrorTargetSheet(sheet, sheetIndex);
 		writeError("Failing due to issue with style on element: " + elm.getStartTag());
 		Iterator<Selector> it = unmatched.iterator();
 		while (it.hasNext()) {
@@ -313,7 +316,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 
 	@Override
 	public void ruleErrors(CSSStyleSheet sheet, int sheetIndex, StyleDeclarationErrorHandler eh) {
-		selectTargetSheet(sheet, sheetIndex, false);
+		selectErrorTargetSheet(sheet, sheetIndex);
 		if (eh instanceof DefaultStyleDeclarationErrorHandler) {
 			StringBuilder buf = new StringBuilder(256);
 			DefaultStyleDeclarationErrorHandler dseh = (DefaultStyleDeclarationErrorHandler) eh;
@@ -327,7 +330,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	@Override
 	public void ruleWarnings(CSSStyleSheet sheet, int sheetIndex, StyleDeclarationErrorHandler eh) {
 		if (eh instanceof DefaultStyleDeclarationErrorHandler) {
-			selectTargetSheet(sheet, sheetIndex, true);
+			selectWarningTargetSheet(sheet, sheetIndex);
 			StringBuilder buf = new StringBuilder(200);
 			DefaultStyleDeclarationErrorHandler dseh = (DefaultStyleDeclarationErrorHandler) eh;
 			dseh.warningSummary(buf);
@@ -340,10 +343,10 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	@Override
 	public void omIssues(CSSStyleSheet sheet, int sheetIndex, SheetErrorHandler errHandler) {
 		if (errHandler instanceof DefaultSheetErrorHandler) {
-			selectTargetSheet(sheet, sheetIndex, false);
 			DefaultSheetErrorHandler dseh = (DefaultSheetErrorHandler) errHandler;
 			LinkedList<String> badAt = dseh.getBadAtRules();
 			if (badAt != null) {
+				selectErrorTargetSheet(sheet, sheetIndex);
 				Iterator<String> it = badAt.iterator();
 				while (it.hasNext()) {
 					writeError("Error parsing at-rule: " + it.next());
@@ -351,6 +354,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 			}
 			LinkedList<SACMediaList> badMedia = dseh.getBadMediaLists();
 			if (badMedia != null) {
+				selectErrorTargetSheet(sheet, sheetIndex);
 				Iterator<SACMediaList> it = badMedia.iterator();
 				while (it.hasNext()) {
 					writeError("Error parsing media query: " + it.next().toString());
@@ -358,6 +362,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 			}
 			LinkedList<String> badInline = dseh.getBadInlineStyles();
 			if (badInline != null) {
+				selectErrorTargetSheet(sheet, sheetIndex);
 				Iterator<String> it = badInline.iterator();
 				while (it.hasNext()) {
 					writeError("Error parsing inline style: " + it.next());
@@ -365,6 +370,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 			}
 			LinkedList<String> ignoredImports = dseh.getIgnoredImports();
 			if (ignoredImports != null) {
+				selectErrorTargetSheet(sheet, sheetIndex);
 				Iterator<String> it = ignoredImports.iterator();
 				while (it.hasNext()) {
 					writeError("Ignored import rule for URI: " + it.next());
@@ -372,6 +378,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 			}
 			LinkedList<String> unknownRules = dseh.getUnknownRules();
 			if (unknownRules != null) {
+				selectErrorTargetSheet(sheet, sheetIndex);
 				Iterator<String> it = unknownRules.iterator();
 				while (it.hasNext()) {
 					writeError("Unknown rule: " + it.next());
@@ -379,6 +386,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 			}
 			LinkedList<RuleParseError> rpe = dseh.getRuleParseErrors();
 			if (rpe != null) {
+				selectErrorTargetSheet(sheet, sheetIndex);
 				Iterator<RuleParseError> it = rpe.iterator();
 				while (it.hasNext()) {
 					writeError("Rule parsing error: " + it.next().toString());
@@ -386,6 +394,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 			}
 			LinkedList<String> emptyRules = dseh.getEmptyStyleRules();
 			if (emptyRules != null) {
+				selectWarningTargetSheet(sheet, sheetIndex);
 				Iterator<String> it = emptyRules.iterator();
 				while (it.hasNext()) {
 					writeWarning("Empty style rule with selector: " + it.next());
@@ -396,26 +405,35 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 
 	@Override
 	public void sacIssues(CSSStyleSheet sheet, int sheetIndex, SACErrorHandler errHandler) {
-		selectTargetSheet(sheet, sheetIndex, !errHandler.hasSacErrors());
-		writeError(errHandler.toString());
 		if (errHandler instanceof DefaultSheetErrorHandler) {
 			DefaultSheetErrorHandler dseh = (DefaultSheetErrorHandler) errHandler;
 			List<CSSParseException> sacErrors = dseh.getSacErrors();
+			StringBuilder buf = new StringBuilder(512);
 			if (sacErrors != null) {
-				ListIterator<CSSParseException> it = sacErrors.listIterator();
-				while (it.hasNext()) {
-					CSSParseException ex = it.next();
-					writeError("SAC error at [" + ex.getLineNumber() + "," + ex.getColumnNumber() + "]: "
-							+ ex.getMessage());
+				selectErrorTargetSheet(sheet, sheetIndex);
+				for (int i = 0; i < sacErrors.size(); i++) {
+					CSSParseException ex = sacErrors.get(i);
+					ExtendedCSSRule rule = dseh.getRuleAtError(i);
+					buf.append("SAC error at [").append(ex.getLineNumber()).append(':').append(ex.getColumnNumber()).append("] ")
+							.append(ex.getMessage());
+					if (rule != null) {
+						buf.append(" --> ").append(rule.getCssText());
+					}
+					buf.append('\n');
+					writeError(buf.toString());
+					buf.setLength(0);
 				}
 			}
 			List<CSSParseException> sacWarnings = dseh.getSacWarnings();
 			if (sacWarnings != null) {
+				selectWarningTargetSheet(sheet, sheetIndex);
 				ListIterator<CSSParseException> it = sacWarnings.listIterator();
 				while (it.hasNext()) {
 					CSSParseException ex = it.next();
-					writeWarning("SAC warning at [" + ex.getLineNumber() + "," + ex.getColumnNumber() + "]: "
-							+ ex.getMessage());
+					buf.append("SAC warning at [").append(ex.getLineNumber()).append(':').append(ex.getColumnNumber())
+							.append("] ").append(ex.getMessage());
+					writeWarning(buf.toString());
+					buf.setLength(0);
 				}
 			}
 		}

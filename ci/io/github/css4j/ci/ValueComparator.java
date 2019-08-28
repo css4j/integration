@@ -14,6 +14,7 @@ package io.github.css4j.ci;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Iterator;
 
 import org.w3c.dom.DOMException;
 import org.w3c.dom.css.CSSPrimitiveValue;
@@ -77,12 +78,8 @@ class ValueComparator {
 			if (isSameLayeredProperty(value, minivalue, masterLen)) {
 				return true;
 			}
-			if (minivalue.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
-				ValueList mlist = (ValueList) minivalue;
-				return mlist.getLength() == 2 && mlist.item(0).equals(mlist.item(1)) && mlist.item(0).equals(value);
-			} else if (value.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
-				ValueList list = (ValueList) value;
-				return list.getLength() == 2 && list.item(0).equals(list.item(1)) && list.item(0).equals(value);
+			if (isRepeatedList(value, minivalue)) {
+				return true;
 			}
 		} else if (property.equals("background-color") && text.equalsIgnoreCase("none")) {
 			return true;
@@ -91,7 +88,7 @@ class ValueComparator {
 			if (isSameLayeredProperty(value, minivalue, masterLen)) {
 				return true;
 			}
-			if (text.equalsIgnoreCase("auto") && minitext.equalsIgnoreCase("auto auto")) {
+			if (isRepeatedList(value, minivalue)) {
 				return true;
 			}
 		} else if (property.startsWith("background-")) {
@@ -99,8 +96,17 @@ class ValueComparator {
 			if (isSameLayeredProperty(value, minivalue, masterLen)) {
 				return true;
 			}
+		} else if (property.startsWith("transition-")) {
+			int masterLen = masterPropertyLength("transition-property");
+			if (isSameLayeredProperty(value, minivalue, masterLen)) {
+				return true;
+			}
 		} else if (property.startsWith("grid-")) {
 			if (isSameLayeredPropertyItem(value, minivalue)) {
+				return true;
+			}
+		} else if (property.startsWith("border-image-")) {
+			if (isRepeatedList(value, minivalue)) {
 				return true;
 			}
 		}
@@ -122,6 +128,29 @@ class ValueComparator {
 		return false;
 	}
 
+	private boolean isRepeatedList(ExtendedCSSValue value, ExtendedCSSValue minivalue) {
+		if (minivalue.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
+			ValueList mlist = (ValueList) minivalue;
+			Iterator<AbstractCSSValue> it = mlist.iterator();
+			minivalue = it.next();
+			while (it.hasNext()) {
+				if (!minivalue.equals(it.next())) {
+					return false;
+				}
+			}
+		}
+		if (value.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
+			Iterator<AbstractCSSValue> it = ((ValueList) value).iterator();
+			value = it.next();
+			while (it.hasNext()) {
+				if (!value.equals(it.next())) {
+					return false;
+				}
+			}
+		}
+		return minivalue.equals(value);
+	}
+
 	/**
 	 * Test whether two values are different.
 	 * 
@@ -132,8 +161,9 @@ class ValueComparator {
 				&& otherValue.getCssValueType() == CSSValue.CSS_PRIMITIVE_VALUE) {
 			ExtendedCSSPrimitiveValue pri = (ExtendedCSSPrimitiveValue) value;
 			ExtendedCSSPrimitiveValue priOther = (ExtendedCSSPrimitiveValue) otherValue;
-			if (pri.getPrimitiveType() == CSSPrimitiveValue.CSS_RGBCOLOR) {
-				short otype = priOther.getPrimitiveType();
+			short ptype = pri.getPrimitiveType();
+			short otype = priOther.getPrimitiveType();
+			if (ptype == CSSPrimitiveValue.CSS_RGBCOLOR) {
 				if (otype == CSSPrimitiveValue.CSS_RGBCOLOR) {
 					RGBAColor color = pri.getRGBColorValue();
 					RGBAColor otherColor = priOther.getRGBColorValue();
@@ -154,8 +184,7 @@ class ValueComparator {
 					}
 					return 2;
 				}
-			} else if (pri.getPrimitiveType() == CSSPrimitiveValue.CSS_URI
-					&& priOther.getPrimitiveType() == CSSPrimitiveValue.CSS_URI) {
+			} else if (ptype == CSSPrimitiveValue.CSS_URI && otype == CSSPrimitiveValue.CSS_URI) {
 				URIValue uri = (URIValue) pri;
 				URIValue uriOther = (URIValue) priOther;
 				if (isSameURI(pri, priOther) || uri.isEquivalent(uriOther)) {
@@ -163,16 +192,14 @@ class ValueComparator {
 				} else {
 					return 2;
 				}
-			} else if (pri.getPrimitiveType() == CSSPrimitiveValue.CSS_STRING
-					&& priOther.getPrimitiveType() == CSSPrimitiveValue.CSS_STRING) {
+			} else if (ptype == CSSPrimitiveValue.CSS_STRING && otype == CSSPrimitiveValue.CSS_STRING) {
 				if (ParseHelper.unescapeStringValue(pri.getStringValue())
 						.equals(ParseHelper.unescapeStringValue(priOther.getStringValue()))) {
 					return 1;
 				} else {
 					return 2;
 				}
-			} else if (pri.getPrimitiveType() == CSSPrimitiveValue2.CSS_GRADIENT
-					&& priOther.getPrimitiveType() == CSSPrimitiveValue2.CSS_GRADIENT) {
+			} else if (ptype == CSSPrimitiveValue2.CSS_GRADIENT && otype == CSSPrimitiveValue2.CSS_GRADIENT) {
 				CSSGradientValue gradient = (CSSGradientValue) pri;
 				CSSGradientValue gradientOther = (CSSGradientValue) priOther;
 				if (gradient.getGradientType() != gradientOther.getGradientType()) {
@@ -194,6 +221,12 @@ class ValueComparator {
 					}
 				}
 				return 1;
+			} else if (ptype == CSSPrimitiveValue.CSS_IDENT && otype == CSSPrimitiveValue.CSS_IDENT) {
+				String sv = pri.getStringValue();
+				String osv = priOther.getStringValue();
+				if (sv.equalsIgnoreCase(osv)) {
+					return 1;
+				}
 			} else if (pri.equals(priOther)) {
 				return 1;
 			}
