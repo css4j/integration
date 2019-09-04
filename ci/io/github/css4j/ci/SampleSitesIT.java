@@ -428,11 +428,11 @@ public class SampleSitesIT {
 	private boolean checkDocumentHandler(HTMLDocument document) {
 		DefaultErrorHandler eh = (DefaultErrorHandler) document.getErrorHandler();
 		if (eh.hasErrors()) {
-			LinkedHashMap<Node, String> me = eh.getMediaErrors();
+			LinkedHashMap<Node, CSSMediaException> me = eh.getMediaErrors();
 			if (me != null) {
-				Iterator<Entry<Node, String>> it = me.entrySet().iterator();
+				Iterator<Entry<Node, CSSMediaException>> it = me.entrySet().iterator();
 				while (it.hasNext()) {
-					Entry<Node, String> entry = it.next();
+					Entry<Node, CSSMediaException> entry = it.next();
 					reporter.mediaQueryError(entry.getKey(), entry.getValue());
 				}
 			}

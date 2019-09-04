@@ -24,6 +24,7 @@ import org.w3c.dom.stylesheets.StyleSheet;
 
 import io.sf.carte.doc.dom.DOMElement;
 import io.sf.carte.doc.style.css.CSSElement;
+import io.sf.carte.doc.style.css.CSSMediaException;
 import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
@@ -39,7 +40,7 @@ public interface SiteErrorReporter {
 
 	void rightHasMoreSheets(List<CSSStyleSheet> missingSheets, int smallerCount);
 
-	void mediaQueryError(Node ownerNode, String mediaQuery);
+	void mediaQueryError(Node ownerNode, CSSMediaException exception);
 
 	void linkedStyleError(Node ownerNode, String message);
 

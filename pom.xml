@@ -9,7 +9,7 @@
   <version>0.2</version>
   <packaging>jar</packaging>
   <properties>
-    <css4j.version>1.0.0-rc5</css4j.version>
+    <css4j.version>1.0.0-rc6</css4j.version>
   </properties>
   <dependencies>
     <dependency>

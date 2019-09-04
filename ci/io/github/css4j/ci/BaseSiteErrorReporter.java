@@ -28,6 +28,7 @@ import org.w3c.dom.stylesheets.StyleSheet;
 
 import io.sf.carte.doc.dom.DOMElement;
 import io.sf.carte.doc.style.css.CSSElement;
+import io.sf.carte.doc.style.css.CSSMediaException;
 import io.sf.carte.doc.style.css.ExtendedCSSRule;
 import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
@@ -141,8 +142,8 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void mediaQueryError(Node ownerNode, String mediaQuery) {
-		writeError("Media query error [node=" + ownerNode.getNodeName() + "]: " + mediaQuery);
+	public void mediaQueryError(Node ownerNode, CSSMediaException exception) {
+		writeError("Media query error [node=" + ownerNode.getNodeName() + "]:", exception);
 	}
 
 	@Override
