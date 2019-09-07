@@ -28,7 +28,7 @@ import io.sf.carte.doc.style.css.RGBAColor;
 import io.sf.carte.doc.style.css.om.BaseCSSStyleDeclaration;
 import io.sf.carte.doc.style.css.om.CSSOMBridge;
 import io.sf.carte.doc.style.css.parser.ParseHelper;
-import io.sf.carte.doc.style.css.property.AbstractCSSValue;
+import io.sf.carte.doc.style.css.property.StyleValue;
 import io.sf.carte.doc.style.css.property.LinkedCSSValueList;
 import io.sf.carte.doc.style.css.property.NumberValue;
 import io.sf.carte.doc.style.css.property.PropertyDatabase;
@@ -51,14 +51,14 @@ class ValueComparator {
 		}
 		String text = value.getCssText();
 		if (text.equalsIgnoreCase("initial")) {
-			AbstractCSSValue inivalue = CSSOMBridge.getInitialValue(property, style, PropertyDatabase.getInstance());
+			StyleValue inivalue = CSSOMBridge.getInitialValue(property, style, PropertyDatabase.getInstance());
 			if (minivalue.equals(inivalue)) {
 				return true;
 			}
 		}
 		String minitext = minivalue.getCssText();
 		if (minitext.equalsIgnoreCase("initial")) {
-			AbstractCSSValue inivalue = CSSOMBridge.getInitialValue(property, style, PropertyDatabase.getInstance());
+			StyleValue inivalue = CSSOMBridge.getInitialValue(property, style, PropertyDatabase.getInstance());
 			if (value.equals(inivalue)) {
 				return true;
 			}
@@ -131,7 +131,7 @@ class ValueComparator {
 	private boolean isRepeatedList(ExtendedCSSValue value, ExtendedCSSValue minivalue) {
 		if (minivalue.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
 			ValueList mlist = (ValueList) minivalue;
-			Iterator<AbstractCSSValue> it = mlist.iterator();
+			Iterator<StyleValue> it = mlist.iterator();
 			minivalue = it.next();
 			while (it.hasNext()) {
 				if (!minivalue.equals(it.next())) {
@@ -140,7 +140,7 @@ class ValueComparator {
 			}
 		}
 		if (value.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
-			Iterator<AbstractCSSValue> it = ((ValueList) value).iterator();
+			Iterator<StyleValue> it = ((ValueList) value).iterator();
 			value = it.next();
 			while (it.hasNext()) {
 				if (!value.equals(it.next())) {
@@ -211,8 +211,8 @@ class ValueComparator {
 					return 2;
 				}
 				for (int i = 0; i < args.getLength(); i++) {
-					AbstractCSSValue arg = args.item(i);
-					AbstractCSSValue argOther = argsOther.item(i);
+					StyleValue arg = args.item(i);
+					StyleValue argOther = argsOther.item(i);
 					if (!arg.equals(argOther)) {
 						int result = testDifferentValue(arg, argOther);
 						if (result != 1) {
@@ -288,7 +288,7 @@ class ValueComparator {
 
 	private int masterPropertyLength(String propertyName) {
 		int masterLen = 10;
-		AbstractCSSValue bimage = style.getPropertyCSSValue(propertyName);
+		StyleValue bimage = style.getPropertyCSSValue(propertyName);
 		if (bimage != null) {
 			if (bimage.getCssValueType() == CSSValue.CSS_VALUE_LIST && ((ValueList) bimage).isCommaSeparated()) {
 				masterLen = ((ValueList) bimage).getLength();
@@ -371,7 +371,7 @@ class ValueComparator {
 			ValueList list = (ValueList) minivalue;
 			if (list.isCommaSeparated()) {
 				for (int i = 0; i < list.getLength(); i++) {
-					AbstractCSSValue item = list.item(i);
+					StyleValue item = list.item(i);
 					if (!value.equals(item) && testDifferentValue(value, item) != 1) {
 						return false;
 					}
@@ -379,7 +379,7 @@ class ValueComparator {
 				return true;
 			} else {
 				for (int i = 0; i < list.getLength(); i++) {
-					AbstractCSSValue item = list.item(i);
+					StyleValue item = list.item(i);
 					if (!value.equals(item) && testDifferentValue(value, item) != 1) {
 						return false;
 					}
@@ -389,7 +389,7 @@ class ValueComparator {
 		} else if (value.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
 			ValueList list = (ValueList) value;
 			for (int i = 0; i < list.getLength(); i++) {
-				AbstractCSSValue item = list.item(i);
+				StyleValue item = list.item(i);
 				if (!minivalue.equals(item) && testDifferentValue(minivalue, item) != 1) {
 					return false;
 				}

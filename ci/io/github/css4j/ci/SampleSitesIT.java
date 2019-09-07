@@ -95,7 +95,7 @@ import io.sf.carte.doc.style.css.om.GroupingRule;
 import io.sf.carte.doc.style.css.om.StylableDocumentWrapper;
 import io.sf.carte.doc.style.css.om.StyleSheetList;
 import io.sf.carte.doc.style.css.om.TestCSSStyleSheetFactory;
-import io.sf.carte.doc.style.css.property.AbstractCSSValue;
+import io.sf.carte.doc.style.css.property.StyleValue;
 import io.sf.carte.doc.style.css.property.CSSPropertyValueException;
 import io.sf.carte.doc.xml.dtd.DefaultEntityResolver;
 import io.sf.carte.net.NetCache;
@@ -588,7 +588,7 @@ public class SampleSitesIT {
 			foundDiff = true;
 		}
 		ValueComparator comp = new ValueComparator(style);
-		AbstractCSSValue value, minivalue;
+		StyleValue value, minivalue;
 		if (different != null) {
 			for (int k = 0; k < different.length; k++) {
 				String property = different[k];
@@ -709,7 +709,7 @@ public class SampleSitesIT {
 			}
 			result = true;
 		}
-		AbstractCSSValue value, reparsedValue;
+		StyleValue value, reparsedValue;
 		if (different != null) {
 			ValueComparator comp = new ValueComparator(style);
 			for (int k = 0; k < different.length; k++) {
@@ -943,7 +943,7 @@ public class SampleSitesIT {
 		int len = style.getLength();
 		for (int i = 0; i < len; i++) {
 			String propertyName = style.item(i);
-			AbstractCSSValue value = style.getPropertyCSSValue(propertyName);
+			StyleValue value = style.getPropertyCSSValue(propertyName);
 			assertNotNull(value);
 		}
 		ErrorHandler eh = element.getOwnerDocument().getErrorHandler();
