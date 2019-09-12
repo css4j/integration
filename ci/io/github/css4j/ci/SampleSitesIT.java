@@ -544,7 +544,7 @@ public class SampleSitesIT {
 		boolean result = true;
 		BaseCSSStyleDeclaration style = (BaseCSSStyleDeclaration) rule.getStyle();
 		String mini = CSSOMBridge.getOptimizedCssText(style);
-		CSSStyleDeclarationRule stylerule = rule.getParentStyleSheet().createCSSStyleRule();
+		CSSStyleDeclarationRule stylerule = rule.getParentStyleSheet().createStyleRule();
 		BaseCSSStyleDeclaration ministyle = (BaseCSSStyleDeclaration) stylerule.getStyle();
 		try {
 			ministyle.setCssText(mini);

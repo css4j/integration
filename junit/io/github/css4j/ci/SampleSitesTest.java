@@ -39,7 +39,7 @@ public class SampleSitesTest {
 	private BaseCSSStyleDeclaration createCSSStyleDeclaration() {
 		AbstractCSSStyleSheet sheet = DOMBridge.createLinkedStyleSheet(sitetest.document.getImplementation(),
 				sitetest.document.getDocumentElement());
-		CSSStyleDeclarationRule styleRule = sheet.createCSSStyleRule();
+		CSSStyleDeclarationRule styleRule = sheet.createStyleRule();
 		return (BaseCSSStyleDeclaration) styleRule.getStyle();
 	}
 
