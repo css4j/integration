@@ -52,6 +52,8 @@ public interface SiteErrorReporter {
 
 	void computedStyleError(CSSElement element, String propertyName, CSSPropertyValueException ex);
 
+	void presentationalHintError(DOMElement element, DOMException ex);
+
 	void minifiedMissingProperty(CSSStyleSheet parent, int ruleIndex, String cssText, String miniCssText,
 			String property, String propertyValue);
 

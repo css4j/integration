@@ -12,10 +12,12 @@
 package io.github.css4j.ci;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map.Entry;
 
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.SACMediaList;
@@ -169,6 +171,11 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	@Override
 	public void computedStyleError(CSSElement element, String propertyName, CSSPropertyValueException ex) {
 		writeError("Computed style error (" + element.getTagName() + "/" + propertyName + "): " + ex.getMessage());
+	}
+
+	@Override
+	public void presentationalHintError(DOMElement element, DOMException ex) {
+		writeError("Presentational hint error (" + element.getTagName() + ").", ex);
 	}
 
 	@Override
@@ -391,6 +398,16 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 				Iterator<RuleParseError> it = rpe.iterator();
 				while (it.hasNext()) {
 					writeError("Rule parsing error: " + it.next().toString());
+				}
+			}
+			HashMap<String, IOException> ruleio = dseh.getRuleIOErrors();
+			if (ruleio != null) {
+				selectErrorTargetSheet(sheet, sheetIndex);
+				Iterator<Entry<String, IOException>> it = ruleio.entrySet().iterator();
+				while (it.hasNext()) {
+					Entry<String, IOException> entry = it.next();
+					String href = entry.getKey();
+					writeError("@import I/O error, URI: " + href, entry.getValue());
 				}
 			}
 			LinkedList<String> emptyRules = dseh.getEmptyStyleRules();

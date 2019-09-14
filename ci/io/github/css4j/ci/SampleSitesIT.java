@@ -947,12 +947,23 @@ public class SampleSitesIT {
 			assertNotNull(value);
 		}
 		ErrorHandler eh = element.getOwnerDocument().getErrorHandler();
-		if (eh.hasComputedStyleErrors()) {
-			HashMap<String, CSSPropertyValueException> csemap = ((DefaultErrorHandler) eh).getComputedStyleErrors(element);
-			Iterator<Entry<String, CSSPropertyValueException>> it = csemap.entrySet().iterator();
-			while (it.hasNext()) {
-				Entry<String, CSSPropertyValueException> entry = it.next();
-				reporter.computedStyleError(element, entry.getKey(), entry.getValue());
+		if (eh.hasComputedStyleErrors(element)) {
+			HashMap<String, CSSPropertyValueException> csemap = ((DefaultErrorHandler) eh)
+					.getComputedStyleErrors(element);
+			if (csemap != null) {
+				Iterator<Entry<String, CSSPropertyValueException>> it = csemap.entrySet().iterator();
+				while (it.hasNext()) {
+					Entry<String, CSSPropertyValueException> entry = it.next();
+					reporter.computedStyleError(element, entry.getKey(), entry.getValue());
+				}
+			}
+			List<DOMException> hintlist = ((DefaultErrorHandler) eh).getHintErrors(element);
+			if (hintlist != null) {
+				Iterator<DOMException> it = hintlist.iterator();
+				while (it.hasNext()) {
+					DOMException ex = it.next();
+					reporter.presentationalHintError(element, ex);
+				}
 			}
 		}
 		Iterator<DOMElement> it = element.elementIterator();
