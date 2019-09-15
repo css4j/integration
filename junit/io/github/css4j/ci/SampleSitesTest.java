@@ -89,6 +89,14 @@ public class SampleSitesTest {
 	}
 
 	@Test
+	public void testIsSameLayeredProperty6() {
+		ValueFactory factory = new ValueFactory();
+		StyleValue value = factory.parseProperty("center 0%");
+		StyleValue other = factory.parseProperty("center 0%, center");
+		assertTrue(comparator.isSameLayeredProperty(value, other, 1));
+	}
+
+	@Test
 	public void testIsSameLayeredPropertyAuto() {
 		// background-size
 		ValueFactory factory = new ValueFactory();
@@ -111,7 +119,7 @@ public class SampleSitesTest {
 		ValueFactory factory = new ValueFactory();
 		StyleValue value = factory.parseProperty("left top, center right");
 		StyleValue other = factory.parseProperty("0% 0%, center right");
-		assertTrue(comparator.isSameBackgroundPosition(value, other));
+		assertTrue(comparator.isSameBackgroundPosition(value, other, 2));
 	}
 
 	@Test
@@ -119,7 +127,7 @@ public class SampleSitesTest {
 		ValueFactory factory = new ValueFactory();
 		StyleValue value = factory.parseProperty("center 10%");
 		StyleValue other = factory.parseProperty("center 10%, center 10%");
-		assertTrue(comparator.isSameBackgroundPosition(value, other));
+		assertTrue(comparator.isSameBackgroundPosition(value, other, 2));
 	}
 
 	@Test
@@ -127,7 +135,7 @@ public class SampleSitesTest {
 		ValueFactory factory = new ValueFactory();
 		StyleValue value = factory.parseProperty("left 0px");
 		StyleValue other = factory.parseProperty("left 0");
-		assertTrue(comparator.isSameBackgroundPosition(value, other));
+		assertTrue(comparator.isSameBackgroundPosition(value, other, 1));
 	}
 
 	@Test
@@ -135,7 +143,15 @@ public class SampleSitesTest {
 		ValueFactory factory = new ValueFactory();
 		StyleValue value = factory.parseProperty("left 0px");
 		StyleValue other = factory.parseProperty("left -0px");
-		assertTrue(comparator.isSameBackgroundPosition(value, other));
+		assertTrue(comparator.isSameBackgroundPosition(value, other, 1));
+	}
+
+	@Test
+	public void testIsSameBackgroundPosition5() {
+		ValueFactory factory = new ValueFactory();
+		StyleValue value = factory.parseProperty("center 0%");
+		StyleValue other = factory.parseProperty("center 0%, center");
+		assertTrue(comparator.isSameBackgroundPosition(value, other, 1));
 	}
 
 	@Test

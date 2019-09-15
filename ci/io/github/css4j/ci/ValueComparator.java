@@ -28,10 +28,10 @@ import io.sf.carte.doc.style.css.RGBAColor;
 import io.sf.carte.doc.style.css.om.BaseCSSStyleDeclaration;
 import io.sf.carte.doc.style.css.om.CSSOMBridge;
 import io.sf.carte.doc.style.css.parser.ParseHelper;
-import io.sf.carte.doc.style.css.property.StyleValue;
 import io.sf.carte.doc.style.css.property.LinkedCSSValueList;
 import io.sf.carte.doc.style.css.property.NumberValue;
 import io.sf.carte.doc.style.css.property.PropertyDatabase;
+import io.sf.carte.doc.style.css.property.StyleValue;
 import io.sf.carte.doc.style.css.property.URIValue;
 import io.sf.carte.doc.style.css.property.ValueList;
 
@@ -71,7 +71,8 @@ class ValueComparator {
 				return true;
 			}
 		}
-		if (property.equals("background-position") && isSameBackgroundPosition(value, minivalue)) {
+		if (property.equals("background-position")
+				&& isSameBackgroundPosition(value, minivalue, masterPropertyLength("background-image"))) {
 			return true;
 		} else if (property.equals("background-repeat")) {
 			int masterLen = masterPropertyLength("background-image");
@@ -399,16 +400,23 @@ class ValueComparator {
 		return false;
 	}
 
-	boolean isSameBackgroundPosition(ExtendedCSSValue value, ExtendedCSSValue minivalue) {
-		if (value.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
-			ValueList list = (ValueList) value;
-			if (list.isCommaSeparated()) {
-				int len = list.getLength();
-				int minilen = ((ValueList) minivalue).getLength();
-				if (minivalue.getCssValueType() != CSSValue.CSS_VALUE_LIST || minilen < len) {
+	boolean isSameBackgroundPosition(ExtendedCSSValue value, ExtendedCSSValue minivalue, int masterLen) {
+		ValueList list;
+		if (value.getCssValueType() == CSSValue.CSS_VALUE_LIST && (list = (ValueList) value).isCommaSeparated()) {
+			int len = list.getLength();
+			if (len > masterLen) {
+				len = masterLen;
+			}
+			if (masterLen > 1) {
+				int minilen;
+				ValueList minilist;
+				if (minivalue.getCssValueType() != CSSValue.CSS_VALUE_LIST
+						|| (minilen = (minilist = (ValueList) minivalue).getLength()) < len) {
 					return false;
 				}
-				ValueList minilist = (ValueList) minivalue;
+				if (minilen > masterLen) {
+					minilen = masterLen;
+				}
 				for (int i = 0; i < len; i++) {
 					if (!isSameBackgroundPositionItem(list.item(i), minilist.item(i))) {
 						return false;
@@ -417,6 +425,29 @@ class ValueComparator {
 				// Check for repeated values
 				for (int i = len; i < minilen; i++) {
 					if (!isSameBackgroundPositionItem(list.item(i - len), minilist.item(i))) {
+						return false;
+					}
+				}
+				return true;
+			} else {
+				value = list.item(0);
+				if (minivalue.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
+					minivalue = ((ValueList) minivalue).item(0);
+				}
+			}
+		} else if (minivalue.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
+			ValueList minilist = (ValueList) minivalue;
+			if (minilist.isCommaSeparated()) {
+				int minilen = minilist.getLength();
+				if (minilen > masterLen) {
+					minilen = masterLen;
+				}
+				if (!isSameBackgroundPositionItem(value, minilist.item(0))) {
+					return false;
+				}
+				// Check for repeated values
+				for (int i = 1; i < minilen; i++) {
+					if (!isSameBackgroundPositionItem(value, minilist.item(i))) {
 						return false;
 					}
 				}
