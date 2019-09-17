@@ -428,7 +428,7 @@ public class SampleSitesIT {
 	private boolean checkDocumentHandler(HTMLDocument document) {
 		DefaultErrorHandler eh = (DefaultErrorHandler) document.getErrorHandler();
 		if (eh.hasErrors()) {
-			LinkedHashMap<Node, CSSMediaException> me = eh.getMediaErrors();
+			HashMap<Node, CSSMediaException> me = eh.getMediaErrors();
 			if (me != null) {
 				Iterator<Entry<Node, CSSMediaException>> it = me.entrySet().iterator();
 				while (it.hasNext()) {
@@ -469,6 +469,15 @@ public class SampleSitesIT {
 					if (styleHandler.hasErrors()) {
 						reporter.inlineStyleError(owner, styleHandler);
 					}
+				}
+			}
+			HashMap<String, IOException> ruleio = eh.getRuleIOErrors();
+			if (ruleio != null) {
+				Iterator<Entry<String, IOException>> it = ruleio.entrySet().iterator();
+				while (it.hasNext()) {
+					Entry<String, IOException> entry = it.next();
+					String href = entry.getKey();
+					reporter.ioError(href, entry.getValue());
 				}
 			}
 		}

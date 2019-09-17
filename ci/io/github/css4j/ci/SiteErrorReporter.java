@@ -82,6 +82,8 @@ public interface SiteErrorReporter {
 	void ruleReparseErrors(String parsedText, String finalText,
 			StyleDeclarationErrorHandler styleDeclarationErrorHandler);
 
+	void ioError(String href, IOException exception);
+
 	void differentNodes(DOMElement parent, LinkedList<Node> nodediff);
 
 	void unmatchedLeftSelector(StyleSheet sheet, int sheetIndex, DOMElement elm, String property, String propertyValue,

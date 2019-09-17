@@ -13,10 +13,13 @@ package io.github.css4j.ci;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
+import java.util.ListIterator;
 
 import org.dom4j.dom.DOMElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.css.sac.CSSParseException;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.css.CSSStyleSheet;
 import org.w3c.dom.stylesheets.StyleSheet;
@@ -106,8 +109,30 @@ public class LogSiteErrorReporter extends BaseSiteErrorReporter {
 		writeError(errHandler.toString());
 		if (errHandler instanceof DefaultSheetErrorHandler) {
 			DefaultSheetErrorHandler dseh = (DefaultSheetErrorHandler) errHandler;
-			dseh.logSacErrors(log);
-			dseh.logSacWarnings(log);
+			logSacErrors(dseh.getSacErrors());
+			logSacWarnings(dseh.getSacWarnings());
+		}
+	}
+
+	private void logSacErrors(List<CSSParseException> sacErrors) {
+		if (sacErrors != null) {
+			ListIterator<CSSParseException> it = sacErrors.listIterator();
+			while (it.hasNext()) {
+				CSSParseException ex = it.next();
+				log.error(
+						"SAC error at [" + ex.getLineNumber() + "," + ex.getColumnNumber() + "]: " + ex.getMessage());
+			}
+		}
+	}
+
+	private void logSacWarnings(List<CSSParseException> sacWarnings) {
+		if (sacWarnings != null) {
+			ListIterator<CSSParseException> it = sacWarnings.listIterator();
+			while (it.hasNext()) {
+				CSSParseException ex = it.next();
+				log.warn(
+						"SAC warning at [" + ex.getLineNumber() + "," + ex.getColumnNumber() + "]: " + ex.getMessage());
+			}
 		}
 	}
 

@@ -12,12 +12,10 @@
 package io.github.css4j.ci;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map.Entry;
 
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.SACMediaList;
@@ -36,8 +34,8 @@ import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
 import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler;
-import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler.RuleParseError;
 import io.sf.carte.doc.style.css.om.DefaultStyleDeclarationErrorHandler;
+import io.sf.carte.doc.style.css.om.RuleParseException;
 import io.sf.carte.doc.style.css.property.CSSPropertyValueException;
 
 abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
@@ -176,6 +174,11 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	@Override
 	public void presentationalHintError(DOMElement element, DOMException ex) {
 		writeError("Presentational hint error (" + element.getTagName() + ").", ex);
+	}
+
+	@Override
+	public void ioError(String href, IOException exception) {
+		writeError("@import or @font-face I/O error, URI: " + href, exception);
 	}
 
 	@Override
@@ -392,22 +395,12 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 					writeError("Unknown rule: " + it.next());
 				}
 			}
-			LinkedList<RuleParseError> rpe = dseh.getRuleParseErrors();
+			LinkedList<RuleParseException> rpe = dseh.getRuleParseErrors();
 			if (rpe != null) {
 				selectErrorTargetSheet(sheet, sheetIndex);
-				Iterator<RuleParseError> it = rpe.iterator();
+				Iterator<RuleParseException> it = rpe.iterator();
 				while (it.hasNext()) {
 					writeError("Rule parsing error: " + it.next().toString());
-				}
-			}
-			HashMap<String, IOException> ruleio = dseh.getRuleIOErrors();
-			if (ruleio != null) {
-				selectErrorTargetSheet(sheet, sheetIndex);
-				Iterator<Entry<String, IOException>> it = ruleio.entrySet().iterator();
-				while (it.hasNext()) {
-					Entry<String, IOException> entry = it.next();
-					String href = entry.getKey();
-					writeError("@import I/O error, URI: " + href, entry.getValue());
 				}
 			}
 			LinkedList<String> emptyRules = dseh.getEmptyStyleRules();
