@@ -96,6 +96,7 @@ import io.sf.carte.doc.style.css.om.StylableDocumentWrapper;
 import io.sf.carte.doc.style.css.om.StyleSheetList;
 import io.sf.carte.doc.style.css.om.TestCSSStyleSheetFactory;
 import io.sf.carte.doc.style.css.property.CSSPropertyValueException;
+import io.sf.carte.doc.style.css.property.PropertyDatabase;
 import io.sf.carte.doc.style.css.property.StyleValue;
 import io.sf.carte.doc.xml.dtd.DefaultEntityResolver;
 import io.sf.carte.net.NetCache;
@@ -323,7 +324,9 @@ public class SampleSitesIT {
 		} catch (CSSMediaException e) {
 		}
 		if (count < 1000) {
-			computeStyles(html);
+			if (!computeStyles(html)) {
+				reporter.fail("Error(s) computing styles.");
+			}
 		}
 		// Report style issues
 		if (document.hasStyleIssues()) {
@@ -947,13 +950,18 @@ public class SampleSitesIT {
 		return retval;
 	}
 
-	private void computeStyles(DOMElement element) {
+	private boolean computeStyles(DOMElement element) {
+		boolean retval = true;
 		ComputedCSSStyle style = element.getComputedStyle(null);
 		int len = style.getLength();
 		for (int i = 0; i < len; i++) {
 			String propertyName = style.item(i);
 			StyleValue value = style.getPropertyCSSValue(propertyName);
-			assertNotNull(value);
+			if (value == null && PropertyDatabase.getInstance().isKnownProperty(propertyName)) {
+				CSSPropertyValueException pve = new CSSPropertyValueException("Null value.");
+				reporter.computedStyleError(element, propertyName, pve);
+				retval = false;
+			}
 		}
 		ErrorHandler eh = element.getOwnerDocument().getErrorHandler();
 		if (eh.hasComputedStyleErrors(element)) {
@@ -964,6 +972,7 @@ public class SampleSitesIT {
 				while (it.hasNext()) {
 					Entry<String, CSSPropertyValueException> entry = it.next();
 					reporter.computedStyleError(element, entry.getKey(), entry.getValue());
+					retval = false;
 				}
 			}
 			List<DOMException> hintlist = ((DefaultErrorHandler) eh).getHintErrors(element);
@@ -972,14 +981,18 @@ public class SampleSitesIT {
 				while (it.hasNext()) {
 					DOMException ex = it.next();
 					reporter.presentationalHintError(element, ex);
+					retval = false;
 				}
 			}
 		}
 		Iterator<DOMElement> it = element.elementIterator();
 		while (it.hasNext()) {
 			DOMElement elm = it.next();
-			computeStyles(elm);
+			if (!computeStyles(elm)) {
+				retval = false;
+			}
 		}
+		return retval;
 	}
 
 	private LinkedList<Selector> unmatchedSelectors(Selector[] sel, CSSElement elm, CSSElement otherdocElm,
