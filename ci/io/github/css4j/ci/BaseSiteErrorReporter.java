@@ -43,7 +43,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	String leftSide;
 	String rightSide;
 
-	abstract void writeError(String message, Exception exception);
+	abstract void writeError(String message, Throwable exception);
 
 	abstract void writeError(String message);
 
@@ -168,7 +168,14 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 
 	@Override
 	public void computedStyleError(CSSElement element, String propertyName, CSSPropertyValueException ex) {
-		writeError("Computed style error (" + element.getTagName() + "/" + propertyName + "): " + ex.getMessage());
+		String message = "Computed style error (" + element.getTagName() + " / " + propertyName + ": "
+				+ ex.getValueText() + ").";
+		Throwable cause = ex.getCause();
+		if (cause != null) {
+			writeError(message, cause);
+		} else {
+			writeError(message);
+		}
 	}
 
 	@Override

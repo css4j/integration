@@ -149,8 +149,8 @@ public class NetCache {
 
 	static class CacheConnection extends URLConnection {
 
-		private File cachedfile;
-		private LinkedHashMap<String, String> headers = new LinkedHashMap<String, String>();
+		private final File cachedfile;
+		private final LinkedHashMap<String, String> headers = new LinkedHashMap<String, String>();
 		long contentLength = -1;
 		private FileInputStream inputStream = null;
 

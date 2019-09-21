@@ -40,7 +40,7 @@ public class LogSiteErrorReporter extends BaseSiteErrorReporter {
 	}
 
 	@Override
-	void writeError(String message, Exception exception) {
+	void writeError(String message, Throwable exception) {
 		log.error(message, exception);
 	}
 

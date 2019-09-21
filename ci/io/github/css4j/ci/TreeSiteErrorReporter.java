@@ -180,7 +180,7 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 	}
 
 	@Override
-	void writeError(String message, Exception exception) {
+	void writeError(String message, Throwable exception) {
 		enableMainWriter();
 		mainwriter.println(message);
 		exception.printStackTrace(mainwriter);
