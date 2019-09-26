@@ -34,6 +34,9 @@ import org.w3c.dom.stylesheets.StyleSheet;
 import io.sf.carte.doc.style.css.CSSElement;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
 
+/**
+ * This reporter stores information in the same tree as the file cache.
+ */
 public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 
 	final static Logger log = LoggerFactory.getLogger(TreeSiteErrorReporter.class.getName());
