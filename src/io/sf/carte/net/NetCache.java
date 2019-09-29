@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -79,7 +80,7 @@ public class NetCache {
 		InputStream is = null;
 		long contentLen = 0;
 		try {
-			Charset charset = Charset.forName("utf-8");
+			Charset charset = StandardCharsets.UTF_8;
 			boolean contentEncodingGzip = false;
 			ucon.connect();
 			Map<String, List<String>> headers = ucon.getHeaderFields();

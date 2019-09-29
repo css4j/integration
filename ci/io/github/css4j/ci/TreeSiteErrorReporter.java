@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
@@ -207,7 +208,7 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 				FileOutputStream out = new FileOutputStream(getMainFile());
 				mainchannel = out.getChannel();
 				mainfd = out.getFD();
-				mainwriter = new PrintWriter(new OutputStreamWriter(out, "utf-8"));
+				mainwriter = new PrintWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
 			} catch (IOException e) {
 				log.error("Unable to write to " + getMainFile().getAbsolutePath(), e);
 			}
@@ -218,7 +219,7 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 		if (warningwriter == null) {
 			try {
 				FileOutputStream out = new FileOutputStream(getWarningFile());
-				warningwriter = new PrintWriter(new OutputStreamWriter(out, "utf-8"));
+				warningwriter = new PrintWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
 			} catch (IOException e) {
 				log.error("Unable to write to " + getWarningFile().getAbsolutePath(), e);
 			}
@@ -232,7 +233,7 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 				FileOutputStream out = new FileOutputStream(getMinificationFile());
 				minichannel = out.getChannel();
 				minifd = out.getFD();
-				miniwriter = new PrintWriter(new OutputStreamWriter(out, "utf-8"));
+				miniwriter = new PrintWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
 			} catch (IOException e) {
 				log.error("Unable to write to " + getMinificationFile().getAbsolutePath(), e);
 			}
@@ -257,7 +258,7 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 		if (serialwriter == null) {
 			try {
 				FileOutputStream out = new FileOutputStream(getSerializationFile());
-				serialwriter = new PrintWriter(new OutputStreamWriter(out, "utf-8"));
+				serialwriter = new PrintWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
 			} catch (IOException e) {
 				log.error("Unable to write to " + getSerializationFile().getAbsolutePath(), e);
 			}
@@ -297,7 +298,7 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 				FileOutputStream out = null;
 				try {
 					out = new FileOutputStream(sheetfile);
-					out.write(text.getBytes("utf-8"));
+					out.write(text.getBytes(StandardCharsets.UTF_8));
 				} catch (IOException e) {
 				} finally {
 					if (out != null) {

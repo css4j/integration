@@ -21,9 +21,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Collection;
@@ -275,15 +275,10 @@ public class SampleSitesIT {
 				return this.getClass().getResourceAsStream(filename);
 			}
 		});
-		Reader re = null;
 		if (is != null) {
-			try {
-				re = new InputStreamReader(is, "utf-8");
-			} catch (UnsupportedEncodingException e) {
-				// Should not happen
-			}
+			return new InputStreamReader(is, StandardCharsets.UTF_8);
 		}
-		return re;
+		return null;
 	}
 
 	@Test
