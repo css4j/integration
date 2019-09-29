@@ -8,15 +8,15 @@ For each URL in the `samplesites.txt` file (that has to be put under the same pa
 
 If you try the test with a high-volume website, beware that each site is retrieved twice (one by each backend), and some sites do send slightly different documents in these circumstances, so you should enable the use of the cache (`cachedir` configuration parameter).
 
-You can put as many websites as you want in `samplesites.txt`, and they can be commented out with the '#' character at the beginning of the line. There is a `samplesites.properties` that can be used for configuration, with options like `parser` and `fail-on-warning` in addition to the aforementioned `cachedir`:
+You can put as many websites as you want in `samplesites.txt`, and they can be commented out with the '#' character at the beginning of the line. There is a `samplesites.properties` that can be used for configuration, with options like `fail-on-warning` in addition to the aforementioned `cachedir`:
 ```
-parser=<fully-qualified-class-name-of-SAC-parser>
 fail-on-warning=<true|false>
 cachedir=<path to site cache>
+parser.<flag>=true
 ```
-- `parser`: the qualified class name of the SAC/NSAC parser to be used in the test.
 - `fail-on-warning`: if set to true, a test shall fail even if only style sheet warnings were logged.
 - `cachedir`: that has to be set to the directory where the cache files can be stored.
+- `parser.<flag>`: set a NSAC parser flag to use in the test.
 
 You can use this tool to monitor a list of URLs that are important for you. The tool can be run from an IDE or with the Maven Failsafe plugin (`mvn verify`), provided that the CI environment is set up correctly.
 

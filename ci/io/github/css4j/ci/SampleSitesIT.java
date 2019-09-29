@@ -94,7 +94,6 @@ import io.sf.carte.doc.style.css.om.DummyDeviceFactory;
 import io.sf.carte.doc.style.css.om.GroupingRule;
 import io.sf.carte.doc.style.css.om.StylableDocumentWrapper;
 import io.sf.carte.doc.style.css.om.StyleSheetList;
-import io.sf.carte.doc.style.css.om.TestCSSStyleSheetFactory;
 import io.sf.carte.doc.style.css.property.CSSPropertyValueException;
 import io.sf.carte.doc.style.css.property.PropertyDatabase;
 import io.sf.carte.doc.style.css.property.StyleValue;
@@ -121,7 +120,6 @@ import nu.validator.htmlparser.dom.HtmlDocumentBuilder;
  * </p>
  * 
  * <pre>
- * parser=&lt;fully-qualified-class-name-of-SAC-parser&gt;
  * fail-on-warning=&lt;true|false&gt;
  * cachedir=/path/to/cache/directory
  * reporter=log|tree
@@ -129,8 +127,6 @@ import nu.validator.htmlparser.dom.HtmlDocumentBuilder;
  * parser.&lt;flag&gt;=true|false
  * </pre>
  * <ul>
- * <li>'parser': the qualified class name of the SAC/NSAC parser to be used in
- * the test.</li>
  * <li>'fail-on-warning': if set to true, a test shall fail even if only
  * warnings were logged.</li>
  * <li>'cachedir': the path to the directory where the network cache can store
@@ -160,10 +156,7 @@ public class SampleSitesIT {
 		try {
 			config.load(re);
 			re.close();
-			System.setProperty("org.w3c.css.sac.parser",
-					config.getProperty("parser", "io.sf.carte.doc.style.css.parser.CSSParser"));
 		} catch (IOException e) {
-			TestCSSStyleSheetFactory.setTestSACParser();
 		}
 		File cachedir = null;
 		String s = config.getProperty("cachedir");
