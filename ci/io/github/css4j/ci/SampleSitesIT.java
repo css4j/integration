@@ -48,7 +48,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.css.sac.Selector;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -77,7 +76,8 @@ import io.sf.carte.doc.style.css.CSSStyleSheetList;
 import io.sf.carte.doc.style.css.ErrorHandler;
 import io.sf.carte.doc.style.css.ExtendedCSSRule;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
-import io.sf.carte.doc.style.css.nsac.Parser2;
+import io.sf.carte.doc.style.css.nsac.Parser;
+import io.sf.carte.doc.style.css.nsac.Selector;
 import io.sf.carte.doc.style.css.om.AbstractCSSRule;
 import io.sf.carte.doc.style.css.om.AbstractCSSStyleSheet;
 import io.sf.carte.doc.style.css.om.BaseCSSDeclarationRule;
@@ -148,7 +148,7 @@ public class SampleSitesIT {
 	private static final boolean failOnWarning;
 	private static final int errorReporterType;
 
-	private static final EnumSet<Parser2.Flag> parserFlags = EnumSet.noneOf(Parser2.Flag.class);
+	private static final EnumSet<Parser.Flag> parserFlags = EnumSet.noneOf(Parser.Flag.class);
 
 	static {
 		Properties config = new Properties();
@@ -189,19 +189,19 @@ public class SampleSitesIT {
 		// NSAC flags
 		s = config.getProperty("parser.starhack");
 		if (s != null && "true".equalsIgnoreCase(s)) {
-			parserFlags.add(Parser2.Flag.STARHACK);
+			parserFlags.add(Parser.Flag.STARHACK);
 		}
 		s = config.getProperty("parser.ievalues");
 		if (s != null && "true".equalsIgnoreCase(s)) {
-			parserFlags.add(Parser2.Flag.IEVALUES);
+			parserFlags.add(Parser.Flag.IEVALUES);
 		}
 		s = config.getProperty("parser.ieprio");
 		if (s != null && "true".equalsIgnoreCase(s)) {
-			parserFlags.add(Parser2.Flag.IEPRIO);
+			parserFlags.add(Parser.Flag.IEPRIO);
 		}
 		s = config.getProperty("parser.iepriochar");
 		if (s != null && "true".equalsIgnoreCase(s)) {
-			parserFlags.add(Parser2.Flag.IEPRIOCHAR);
+			parserFlags.add(Parser.Flag.IEPRIOCHAR);
 		}
 		failOnWarning = "true".equalsIgnoreCase(config.getProperty("fail-on-warning", "false"));
 	}

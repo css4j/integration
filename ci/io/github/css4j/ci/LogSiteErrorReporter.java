@@ -19,13 +19,13 @@ import java.util.ListIterator;
 import org.dom4j.dom.DOMElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.css.sac.CSSParseException;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.css.CSSStyleSheet;
 import org.w3c.dom.stylesheets.StyleSheet;
 
 import io.sf.carte.doc.style.css.CSSElement;
 import io.sf.carte.doc.style.css.SACErrorHandler;
+import io.sf.carte.doc.style.css.nsac.CSSParseException;
 import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler;
 
 public class LogSiteErrorReporter extends BaseSiteErrorReporter {

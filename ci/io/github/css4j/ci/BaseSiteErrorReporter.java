@@ -17,9 +17,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.w3c.css.sac.CSSParseException;
-import org.w3c.css.sac.SACMediaList;
-import org.w3c.css.sac.Selector;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -30,9 +27,12 @@ import io.sf.carte.doc.dom.DOMElement;
 import io.sf.carte.doc.style.css.CSSElement;
 import io.sf.carte.doc.style.css.CSSMediaException;
 import io.sf.carte.doc.style.css.ExtendedCSSRule;
+import io.sf.carte.doc.style.css.MediaQueryList;
 import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
+import io.sf.carte.doc.style.css.nsac.CSSParseException;
+import io.sf.carte.doc.style.css.nsac.Selector;
 import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler;
 import io.sf.carte.doc.style.css.om.DefaultStyleDeclarationErrorHandler;
 import io.sf.carte.doc.style.css.om.RuleParseException;
@@ -370,12 +370,12 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 					writeError("Error parsing at-rule: " + it.next());
 				}
 			}
-			LinkedList<SACMediaList> badMedia = dseh.getBadMediaLists();
+			LinkedList<MediaQueryList> badMedia = dseh.getBadMediaLists();
 			if (badMedia != null) {
 				selectErrorTargetSheet(sheet, sheetIndex);
-				Iterator<SACMediaList> it = badMedia.iterator();
+				Iterator<MediaQueryList> it = badMedia.iterator();
 				while (it.hasNext()) {
-					writeError("Error parsing media query: " + it.next().toString());
+					writeError("Error parsing media query: " + it.next().getMedia());
 				}
 			}
 			LinkedList<String> badInline = dseh.getBadInlineStyles();

@@ -16,7 +16,6 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.w3c.css.sac.Selector;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.css.CSSStyleSheet;
@@ -28,6 +27,7 @@ import io.sf.carte.doc.style.css.CSSMediaException;
 import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
+import io.sf.carte.doc.style.css.nsac.Selector;
 import io.sf.carte.doc.style.css.property.CSSPropertyValueException;
 
 public interface SiteErrorReporter {
