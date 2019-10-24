@@ -17,13 +17,14 @@ import java.net.URL;
 import java.util.Iterator;
 
 import org.w3c.dom.DOMException;
-import org.w3c.dom.css.CSSPrimitiveValue;
-import org.w3c.dom.css.CSSValue;
 
 import io.sf.carte.doc.style.css.CSSGradientValue;
-import io.sf.carte.doc.style.css.CSSPrimitiveValue2;
-import io.sf.carte.doc.style.css.ExtendedCSSPrimitiveValue;
-import io.sf.carte.doc.style.css.ExtendedCSSValue;
+import io.sf.carte.doc.style.css.CSSPrimitiveValue;
+import io.sf.carte.doc.style.css.CSSTypedValue;
+import io.sf.carte.doc.style.css.CSSUnit;
+import io.sf.carte.doc.style.css.CSSValue;
+import io.sf.carte.doc.style.css.CSSValue.CssType;
+import io.sf.carte.doc.style.css.CSSValue.Type;
 import io.sf.carte.doc.style.css.RGBAColor;
 import io.sf.carte.doc.style.css.om.BaseCSSStyleDeclaration;
 import io.sf.carte.doc.style.css.om.CSSOMBridge;
@@ -44,7 +45,7 @@ class ValueComparator {
 		this.style = style;
 	}
 
-	public boolean isNotDifferent(String property, ExtendedCSSValue value, ExtendedCSSValue minivalue) {
+	public boolean isNotDifferent(String property, CSSValue value, CSSValue minivalue) {
 		if (value.equals(minivalue)) {
 			// This is always going to evaluate to false, but just in case...
 			return true;
@@ -65,8 +66,8 @@ class ValueComparator {
 		}
 		if (text.equals(minitext) || isApproximateNumericValue(value, minivalue)) {
 			return true;
-		} else if (value.getCssValueType() == CSSValue.CSS_VALUE_LIST
-				&& minivalue.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
+		} else if (value.getCssValueType() == CssType.LIST
+				&& minivalue.getCssValueType() == CssType.LIST) {
 			if (isApproximateNumericValue((ValueList) value, (ValueList) minivalue)) {
 				return true;
 			}
@@ -129,8 +130,8 @@ class ValueComparator {
 		return false;
 	}
 
-	private boolean isRepeatedList(ExtendedCSSValue value, ExtendedCSSValue minivalue) {
-		if (minivalue.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
+	private boolean isRepeatedList(CSSValue value, CSSValue minivalue) {
+		if (minivalue.getCssValueType() == CssType.LIST) {
 			ValueList mlist = (ValueList) minivalue;
 			Iterator<StyleValue> it = mlist.iterator();
 			minivalue = it.next();
@@ -140,7 +141,7 @@ class ValueComparator {
 				}
 			}
 		}
-		if (value.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
+		if (value.getCssValueType() == CssType.LIST) {
 			Iterator<StyleValue> it = ((ValueList) value).iterator();
 			value = it.next();
 			while (it.hasNext()) {
@@ -157,27 +158,26 @@ class ValueComparator {
 	 * 
 	 * @return 1 if not different, 2 if different, 0 if inconclusive
 	 */
-	private int testDifferentValue(ExtendedCSSValue value, ExtendedCSSValue otherValue) {
-		if (value.getCssValueType() == CSSValue.CSS_PRIMITIVE_VALUE
-				&& otherValue.getCssValueType() == CSSValue.CSS_PRIMITIVE_VALUE) {
-			ExtendedCSSPrimitiveValue pri = (ExtendedCSSPrimitiveValue) value;
-			ExtendedCSSPrimitiveValue priOther = (ExtendedCSSPrimitiveValue) otherValue;
-			short ptype = pri.getPrimitiveType();
-			short otype = priOther.getPrimitiveType();
-			if (ptype == CSSPrimitiveValue.CSS_RGBCOLOR) {
-				if (otype == CSSPrimitiveValue.CSS_RGBCOLOR) {
+	private int testDifferentValue(CSSValue value, CSSValue otherValue) {
+		if (value.getCssValueType() == CssType.TYPED
+				&& otherValue.getCssValueType() == CssType.TYPED) {
+			CSSTypedValue pri = (CSSTypedValue) value;
+			CSSTypedValue priOther = (CSSTypedValue) otherValue;
+			Type ptype = pri.getPrimitiveType();
+			Type otype = priOther.getPrimitiveType();
+			if (ptype == Type.RGBCOLOR) {
+				if (otype == Type.RGBCOLOR) {
 					RGBAColor color = pri.getRGBColorValue();
 					RGBAColor otherColor = priOther.getRGBColorValue();
 					if (similarComponentValues(color.getRed(), otherColor.getRed())
 							&& similarComponentValues(color.getGreen(), otherColor.getGreen())
 							&& similarComponentValues(color.getBlue(), otherColor.getBlue())
-							&& Math.abs(color.getAlpha().getFloatValue(CSSPrimitiveValue.CSS_NUMBER)
-									- otherColor.getAlpha().getFloatValue(CSSPrimitiveValue.CSS_NUMBER)) < 0.01f) {
+							&& similarAlphaValue(color.getAlpha(), otherColor.getAlpha())) {
 						return 1;
 					} else {
 						return 2;
 					}
-				} else if (otype == CSSPrimitiveValue.CSS_IDENT
+				} else if (otype == Type.IDENT
 						&& "transparent".equalsIgnoreCase(priOther.getStringValue())) {
 					String cssText = pri.getMinifiedCssText("");
 					if ("rgba(0,0,0,0)".equals(cssText) || "rgb(0 0 0/0)".equals(cssText)) {
@@ -185,7 +185,7 @@ class ValueComparator {
 					}
 					return 2;
 				}
-			} else if (ptype == CSSPrimitiveValue.CSS_URI && otype == CSSPrimitiveValue.CSS_URI) {
+			} else if (ptype == Type.URI && otype == Type.URI) {
 				URIValue uri = (URIValue) pri;
 				URIValue uriOther = (URIValue) priOther;
 				if (isSameURI(pri, priOther) || uri.isEquivalent(uriOther)) {
@@ -193,14 +193,14 @@ class ValueComparator {
 				} else {
 					return 2;
 				}
-			} else if (ptype == CSSPrimitiveValue.CSS_STRING && otype == CSSPrimitiveValue.CSS_STRING) {
+			} else if (ptype == Type.STRING && otype == Type.STRING) {
 				if (ParseHelper.unescapeStringValue(pri.getStringValue())
 						.equals(ParseHelper.unescapeStringValue(priOther.getStringValue()))) {
 					return 1;
 				} else {
 					return 2;
 				}
-			} else if (ptype == CSSPrimitiveValue2.CSS_GRADIENT && otype == CSSPrimitiveValue2.CSS_GRADIENT) {
+			} else if (ptype == Type.GRADIENT && otype == Type.GRADIENT) {
 				CSSGradientValue gradient = (CSSGradientValue) pri;
 				CSSGradientValue gradientOther = (CSSGradientValue) priOther;
 				if (gradient.getGradientType() != gradientOther.getGradientType()) {
@@ -222,7 +222,7 @@ class ValueComparator {
 					}
 				}
 				return 1;
-			} else if (ptype == CSSPrimitiveValue.CSS_IDENT && otype == CSSPrimitiveValue.CSS_IDENT) {
+			} else if (ptype == Type.IDENT && otype == Type.IDENT) {
 				String sv = pri.getStringValue();
 				String osv = priOther.getStringValue();
 				if (sv.equalsIgnoreCase(osv)) {
@@ -231,8 +231,8 @@ class ValueComparator {
 			} else if (pri.equals(priOther)) {
 				return 1;
 			}
-		} else if (value.getCssValueType() == CSSValue.CSS_VALUE_LIST
-				&& otherValue.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
+		} else if (value.getCssValueType() == CssType.LIST
+				&& otherValue.getCssValueType() == CssType.LIST) {
 			ValueList list = (ValueList) value;
 			int len = list.getLength();
 			ValueList otherList = (ValueList) otherValue;
@@ -254,7 +254,7 @@ class ValueComparator {
 		return 0;
 	}
 
-	private boolean isSameURI(CSSPrimitiveValue pri, CSSPrimitiveValue primini) {
+	private boolean isSameURI(CSSTypedValue pri, CSSTypedValue primini) {
 		String uri = pri.getStringValue();
 		String urimini = primini.getStringValue();
 		URL baseurl;
@@ -273,25 +273,37 @@ class ValueComparator {
 	}
 
 	private static boolean similarComponentValues(CSSPrimitiveValue comp1, CSSPrimitiveValue comp2) {
-		return Math.abs(colorComponentPercent(comp1) - colorComponentPercent(comp2)) < 1f;
+		if (comp1.getPrimitiveType() != Type.NUMERIC || comp2.getPrimitiveType() != Type.NUMERIC) {
+			return comp1.equals(comp2);
+		}
+		return Math
+				.abs(colorComponentPercent((CSSTypedValue) comp1) - colorComponentPercent((CSSTypedValue) comp2)) < 1f;
 	}
 
-	private static float colorComponentPercent(CSSPrimitiveValue comp) {
+	private static float colorComponentPercent(CSSTypedValue comp) {
 		float val;
-		short type = comp.getPrimitiveType();
-		if (type == CSSPrimitiveValue.CSS_PERCENTAGE) {
-			val = comp.getFloatValue(CSSPrimitiveValue.CSS_PERCENTAGE);
+		short type = comp.getUnitType();
+		if (type == CSSUnit.CSS_PERCENTAGE) {
+			val = comp.getFloatValue(CSSUnit.CSS_PERCENTAGE);
 		} else {
-			val = comp.getFloatValue(CSSPrimitiveValue.CSS_NUMBER) / 2.55f;
+			val = comp.getFloatValue(CSSUnit.CSS_NUMBER) / 2.55f;
 		}
 		return val;
+	}
+
+	private boolean similarAlphaValue(CSSPrimitiveValue alpha, CSSPrimitiveValue alpha2) {
+		if (alpha.getPrimitiveType() != Type.NUMERIC || alpha2.getPrimitiveType() != Type.NUMERIC) {
+			return alpha.equals(alpha2);
+		}
+		return Math.abs(((CSSTypedValue) alpha).getFloatValue(CSSUnit.CSS_NUMBER)
+				- ((CSSTypedValue) alpha2).getFloatValue(CSSUnit.CSS_NUMBER)) < 0.01f;
 	}
 
 	private int masterPropertyLength(String propertyName) {
 		int masterLen = 10;
 		StyleValue bimage = style.getPropertyCSSValue(propertyName);
 		if (bimage != null) {
-			if (bimage.getCssValueType() == CSSValue.CSS_VALUE_LIST && ((ValueList) bimage).isCommaSeparated()) {
+			if (bimage.getCssValueType() == CssType.LIST && ((ValueList) bimage).isCommaSeparated()) {
 				masterLen = ((ValueList) bimage).getLength();
 			} else {
 				masterLen = 1;
@@ -300,20 +312,20 @@ class ValueComparator {
 		return masterLen;
 	}
 
-	boolean isSameLayeredProperty(ExtendedCSSValue value, ExtendedCSSValue minivalue, int masterLen) {
+	boolean isSameLayeredProperty(CSSValue value, CSSValue minivalue, int masterLen) {
 		if (masterLen == 1) {
 			ValueList list, minilist;
-			if (minivalue.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
+			if (minivalue.getCssValueType() == CssType.LIST) {
 				minilist = (ValueList) minivalue;
 				if (minilist.isCommaSeparated()) {
 					minivalue = minilist.item(0);
 				}
 			}
-			if (value.getCssValueType() == CSSValue.CSS_VALUE_LIST && (list = (ValueList) minivalue).isCommaSeparated()) {
+			if (value.getCssValueType() == CssType.LIST && (list = (ValueList) minivalue).isCommaSeparated()) {
 				value = list.item(0);
 			}
 			return isSameLayeredPropertyItem(value, minivalue);
-		} else if (value.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
+		} else if (value.getCssValueType() == CssType.LIST) {
 			ValueList list = (ValueList) value;
 			if (list.isCommaSeparated()) {
 				int len = list.getLength();
@@ -322,7 +334,7 @@ class ValueComparator {
 				}
 				int minilen;
 				ValueList minilist;
-				if (minivalue.getCssValueType() != CSSValue.CSS_VALUE_LIST
+				if (minivalue.getCssValueType() != CssType.LIST
 						|| (minilen = (minilist = (ValueList) minivalue).getLength()) < len) {
 					return false;
 				}
@@ -340,14 +352,14 @@ class ValueComparator {
 				return true;
 			}
 		}
-		if (minivalue.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
+		if (minivalue.getCssValueType() == CssType.LIST) {
 			ValueList minilist = (ValueList) minivalue;
 			if (minilist.isCommaSeparated()) {
 				int minilen = minilist.getLength();
 				if (minilen > masterLen) {
 					minilen = masterLen;
 				}
-				boolean islist = value.getCssValueType() == CSSValue.CSS_VALUE_LIST;
+				boolean islist = value.getCssValueType() == CssType.LIST;
 				if (!islist || (islist && !((ValueList) value).isCommaSeparated())) {
 					for (int i = 0; i < minilen; i++) {
 						if (!isSameLayeredPropertyItem(value, minilist.item(i))) {
@@ -364,11 +376,11 @@ class ValueComparator {
 	/*
 	 * Here, value is not a comma-separated list
 	 */
-	private boolean isSameLayeredPropertyItem(ExtendedCSSValue value, ExtendedCSSValue minivalue) {
+	private boolean isSameLayeredPropertyItem(CSSValue value, CSSValue minivalue) {
 		if (value.equals(minivalue) || testDifferentValue(value, minivalue) == 1) {
 			return true;
 		}
-		if (minivalue.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
+		if (minivalue.getCssValueType() == CssType.LIST) {
 			ValueList list = (ValueList) minivalue;
 			if (list.isCommaSeparated()) {
 				for (int i = 0; i < list.getLength(); i++) {
@@ -387,7 +399,7 @@ class ValueComparator {
 				}
 				return true;
 			}
-		} else if (value.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
+		} else if (value.getCssValueType() == CssType.LIST) {
 			ValueList list = (ValueList) value;
 			for (int i = 0; i < list.getLength(); i++) {
 				StyleValue item = list.item(i);
@@ -400,9 +412,9 @@ class ValueComparator {
 		return false;
 	}
 
-	boolean isSameBackgroundPosition(ExtendedCSSValue value, ExtendedCSSValue minivalue, int masterLen) {
+	boolean isSameBackgroundPosition(CSSValue value, CSSValue minivalue, int masterLen) {
 		ValueList list;
-		if (value.getCssValueType() == CSSValue.CSS_VALUE_LIST && (list = (ValueList) value).isCommaSeparated()) {
+		if (value.getCssValueType() == CssType.LIST && (list = (ValueList) value).isCommaSeparated()) {
 			int len = list.getLength();
 			if (len > masterLen) {
 				len = masterLen;
@@ -410,7 +422,7 @@ class ValueComparator {
 			if (masterLen > 1) {
 				int minilen;
 				ValueList minilist;
-				if (minivalue.getCssValueType() != CSSValue.CSS_VALUE_LIST
+				if (minivalue.getCssValueType() != CssType.LIST
 						|| (minilen = (minilist = (ValueList) minivalue).getLength()) < len) {
 					return false;
 				}
@@ -431,11 +443,11 @@ class ValueComparator {
 				return true;
 			} else {
 				value = list.item(0);
-				if (minivalue.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
+				if (minivalue.getCssValueType() == CssType.LIST) {
 					minivalue = ((ValueList) minivalue).item(0);
 				}
 			}
-		} else if (minivalue.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
+		} else if (minivalue.getCssValueType() == CssType.LIST) {
 			ValueList minilist = (ValueList) minivalue;
 			if (minilist.isCommaSeparated()) {
 				int minilen = minilist.getLength();
@@ -460,18 +472,18 @@ class ValueComparator {
 	/*
 	 * Here, value is not a comma-separated list
 	 */
-	boolean isSameBackgroundPositionItem(ExtendedCSSValue value, ExtendedCSSValue minivalue) {
+	boolean isSameBackgroundPositionItem(CSSValue value, CSSValue minivalue) {
 		if (value.equals(minivalue)) {
 			return true;
 		}
-		if (value.getCssValueType() == CSSValue.CSS_VALUE_LIST) {
+		if (value.getCssValueType() == CssType.LIST) {
 			ValueList list = (ValueList) value;
 			if (list.getLength() == 2) {
 				String text1 = list.item(1).getCssText();
 				if (text1.equalsIgnoreCase("center")) {
 					return list.item(0).equals(minivalue);
 				}
-				if (minivalue.getCssValueType() != CSSValue.CSS_VALUE_LIST
+				if (minivalue.getCssValueType() != CssType.LIST
 						|| ((ValueList) minivalue).getLength() != 2) {
 					return false;
 				}
@@ -501,12 +513,12 @@ class ValueComparator {
 		return false;
 	}
 
-	private static boolean isApproximateNumericValue(ExtendedCSSValue value, ExtendedCSSValue minivalue) {
+	private static boolean isApproximateNumericValue(CSSValue value, CSSValue minivalue) {
 		if (value instanceof NumberValue && minivalue instanceof NumberValue) {
 			NumberValue num = (NumberValue) value;
 			NumberValue mininum = (NumberValue) minivalue;
-			int val = Math.round(num.getFloatValue(num.getPrimitiveType()) * 1000f);
-			int minival = Math.round(mininum.getFloatValue(mininum.getPrimitiveType()) * 1000f);
+			int val = Math.round(num.getFloatValue(num.getUnitType()) * 1000f);
+			int minival = Math.round(mininum.getFloatValue(mininum.getUnitType()) * 1000f);
 			if (val == 0 && minival == 0) {
 				return true;
 			}
