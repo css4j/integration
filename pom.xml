@@ -13,6 +13,14 @@
   </properties>
   <dependencies>
     <dependency>
+		<groupId>junit</groupId>
+		<artifactId>junit</artifactId>
+		<version>4.12</version>
+		<type>jar</type>
+		<scope>test</scope>
+		<optional>false</optional>
+    </dependency>
+    <dependency>
 		<groupId>io.sf.carte</groupId>
 		<artifactId>css4j</artifactId>
 		<version>${css4j.version}</version>
@@ -102,6 +110,7 @@
 			<artifactId>maven-javadoc-plugin</artifactId>
 			<version>3.1.0</version>
 			<configuration>
+				<source>8</source>
 				<quiet>true</quiet>
 			</configuration>
 			<executions>
@@ -163,6 +172,7 @@
 				<execution>
 					<goals>
 						<goal>integration-test</goal>
+						<goal>verify</goal>
 					</goals>
 				</execution>
 			</executions>
