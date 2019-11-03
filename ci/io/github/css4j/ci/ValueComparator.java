@@ -26,6 +26,7 @@ import io.sf.carte.doc.style.css.CSSValue;
 import io.sf.carte.doc.style.css.CSSValue.CssType;
 import io.sf.carte.doc.style.css.CSSValue.Type;
 import io.sf.carte.doc.style.css.RGBAColor;
+import io.sf.carte.doc.style.css.nsac.LexicalUnit;
 import io.sf.carte.doc.style.css.om.BaseCSSStyleDeclaration;
 import io.sf.carte.doc.style.css.om.CSSOMBridge;
 import io.sf.carte.doc.style.css.parser.ParseHelper;
@@ -34,7 +35,9 @@ import io.sf.carte.doc.style.css.property.NumberValue;
 import io.sf.carte.doc.style.css.property.PropertyDatabase;
 import io.sf.carte.doc.style.css.property.StyleValue;
 import io.sf.carte.doc.style.css.property.URIValue;
+import io.sf.carte.doc.style.css.property.ValueFactory;
 import io.sf.carte.doc.style.css.property.ValueList;
+import io.sf.carte.doc.style.css.property.VarValue;
 
 class ValueComparator {
 
@@ -47,20 +50,23 @@ class ValueComparator {
 
 	public boolean isNotDifferent(String property, CSSValue value, CSSValue minivalue) {
 		if (value.equals(minivalue)) {
-			// This is always going to evaluate to false, but just in case...
+			// This is almost always going to evaluate to false
 			return true;
 		}
 		String text = value.getCssText();
-		if (text.equalsIgnoreCase("initial")) {
+		if (value.getPrimitiveType() == CSSValue.Type.INITIAL || (value.getPrimitiveType() == CSSValue.Type.UNSET
+				&& !PropertyDatabase.getInstance().isInherited(property))) {
 			StyleValue inivalue = CSSOMBridge.getInitialValue(property, style, PropertyDatabase.getInstance());
-			if (minivalue.equals(inivalue)) {
+			if (isNotDifferent(property, inivalue, minivalue)) {
 				return true;
 			}
 		}
 		String minitext = minivalue.getCssText();
-		if (minitext.equalsIgnoreCase("initial")) {
+		if (minivalue.getPrimitiveType() == CSSValue.Type.INITIAL
+				|| (minivalue.getPrimitiveType() == CSSValue.Type.UNSET
+						&& !PropertyDatabase.getInstance().isInherited(property))) {
 			StyleValue inivalue = CSSOMBridge.getInitialValue(property, style, PropertyDatabase.getInstance());
-			if (value.equals(inivalue)) {
+			if (isNotDifferent(property, value, inivalue)) {
 				return true;
 			}
 		}
@@ -231,6 +237,37 @@ class ValueComparator {
 			} else if (pri.equals(priOther)) {
 				return 1;
 			}
+		} else if (value.getCssValueType() == CssType.PROXY
+				&& otherValue.getCssValueType() == CssType.PROXY) {
+			Type ptype = value.getPrimitiveType();
+			Type otype = otherValue.getPrimitiveType();
+			if (ptype == Type.VAR && otype == Type.VAR) {
+				VarValue var = (VarValue) value;
+				VarValue varOther = (VarValue) otherValue;
+				if (var.getName().equals(varOther.getName())) {
+					LexicalUnit fb = var.getFallback();
+					LexicalUnit fbOther = varOther.getFallback();
+					if (fb == null) {
+						if (fbOther == null) {
+							return 1;
+						}
+					} else if (fbOther != null) {
+						if (fb.equals(fbOther)) {
+							return 1;
+						}
+						ValueFactory vf = new ValueFactory();
+						StyleValue fbOm, fbOtherOm;
+						try {
+							fbOm = vf.createCSSValue(fb);
+							fbOtherOm = vf.createCSSValue(fbOther);
+						} catch (DOMException e) {
+							return 2;
+						}
+						return testDifferentValue(fbOm, fbOtherOm);
+					}
+				}
+			}
+			return 2;
 		} else if (value.getCssValueType() == CssType.LIST
 				&& otherValue.getCssValueType() == CssType.LIST) {
 			ValueList list = (ValueList) value;

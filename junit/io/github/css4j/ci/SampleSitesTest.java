@@ -267,12 +267,41 @@ public class SampleSitesTest {
 	}
 
 	@Test
+	public void testIsNotDifferentVar() {
+		styleDecl.setCssText("color:var(--foo, #FFFFFF);");
+		StyleValue value = styleDecl.getPropertyCSSValue("color");
+		ValueFactory factory = new ValueFactory();
+		StyleValue other = factory.parseProperty("var(--foo,#fff)");
+		assertTrue(comparator.isNotDifferent("color", value, other));
+	}
+
+	@Test
 	public void testIsNotDifferentList() {
 		styleDecl.setCssText("border-image-slice: 10;");
 		StyleValue value = styleDecl.getPropertyCSSValue("border-image-slice");
 		ValueFactory factory = new ValueFactory();
 		StyleValue other = factory.parseProperty("10 10");
 		assertTrue(comparator.isNotDifferent("border-image-slice", value, other));
+	}
+
+	@Test
+	public void testIsNotDifferentUnset() {
+		styleDecl.setCssText("margin-bottom:unset;");
+		StyleValue value = styleDecl.getPropertyCSSValue("margin-bottom");
+		ValueFactory factory = new ValueFactory();
+		StyleValue other = factory.parseProperty("0");
+		assertTrue(comparator.isNotDifferent("margin-bottom", value, other));
+		assertTrue(comparator.isNotDifferent("margin-bottom", other, value));
+	}
+
+	@Test
+	public void testIsNotDifferentUnsetBGSize() {
+		styleDecl.setCssText("background-size:unset;");
+		StyleValue value = styleDecl.getPropertyCSSValue("background-size");
+		ValueFactory factory = new ValueFactory();
+		StyleValue other = factory.parseProperty("auto auto");
+		assertTrue(comparator.isNotDifferent("background-size", value, other));
+		assertTrue(comparator.isNotDifferent("background-size", other, value));
 	}
 
 }

@@ -638,43 +638,12 @@ public class SampleSitesIT {
 				result = false;
 			}
 		}
-		if (rule.getType() != CSSRule.STYLE_RULE && result && serializedText.indexOf('\ufffd') == -1) {
-			String reparsed = other.getCssText();
-			if (!checkRulePreamble(sheet, sheetIndex, ruleIndex, serializedText, reparsed)) {
-				result = false;
-			}
-		}
-		return result;
-	}
-
-	private boolean checkRulePreamble(AbstractCSSStyleSheet sheet, int sheetIndex, int ruleIndex, String serializedText,
-			String reparsed) {
-		boolean result = true;
-		int lbi = serializedText.indexOf('{');
-		int lbirep = reparsed.indexOf('{');
-		if (lbi != -1) {
-			if (lbirep == -1) {
-				result = false;
-			} else {
-				String preamble = serializedText.substring(0, lbi).trim();
-				String repPreamble = reparsed.substring(0, lbirep).trim();
-				if (!preamble.equalsIgnoreCase(repPreamble)) {
-					reporter.ruleReparseIssue(sheet, ruleIndex, serializedText, reparsed);
-					result = false;
-				}
-			}
-		}
 		return result;
 	}
 
 	private short checkGroupingRule(GroupingRule rule, int sheetIndex, int ruleIndex, AbstractCSSStyleSheet sheet)
 			throws DOMException, IOException {
 		short result = -1;
-		String serializedText = rule.getCssText();
-		AbstractCSSRule other = rule.clone(sheet);
-		if (!checkRulePreamble(sheet, sheetIndex, ruleIndex, serializedText, other.getCssText())) {
-			result = rule.getType();
-		}
 		short ruleListResult = checkRuleListSerialization(rule.getCssRules(), sheetIndex, sheet);
 		if (ruleListResult != -1) {
 			result = ruleListResult;
@@ -744,7 +713,7 @@ public class SampleSitesIT {
 			reporter.ruleReparseIssue(rule.getParentStyleSheet(), ruleIndex, parsedText, e.getMessage());
 			return false;
 		}
-		if (!rule.equals(other)) {
+		if (!rule.equals(other) && !rule.getCssText().equals(other.getCssText())) {
 			reporter.ruleReparseIssue(rule.getParentStyleSheet(), ruleIndex, parsedText, other.getCssText());
 			return false;
 		}
@@ -1092,6 +1061,7 @@ public class SampleSitesIT {
 		MyDOM4JUserAgent() {
 			super(parserFlags, false);
 			setOriginPolicy(DefaultOriginPolicy.getInstance());
+			getXHTMLDocumentFactory().setStyleCache(true);
 		}
 
 		@Override
