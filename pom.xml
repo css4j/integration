@@ -164,6 +164,7 @@
 			<artifactId>maven-failsafe-plugin</artifactId>
 			<version>3.0.0-M3</version>
 			<configuration>
+				<forkCount>0</forkCount>
 				<argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
 				<additionalClasspathElements>
 					<additionalClasspathElement>${project.basedir}/ci</additionalClasspathElement>
