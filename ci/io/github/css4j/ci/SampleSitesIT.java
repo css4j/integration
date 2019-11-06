@@ -342,9 +342,9 @@ public class SampleSitesIT {
 			if (hasErrors || errHandler.hasSacWarnings() || sheet.hasRuleErrorsOrWarnings()) {
 				if (sheet.hasRuleErrorsOrWarnings()) {
 					CSSRuleArrayList rules = sheet.getCssRules();
-					for (ExtendedCSSRule rule : rules) {
-						if (rule.getType() == CSSRule.STYLE_RULE) {
-							StyleDeclarationErrorHandler eh = ((CSSStyleDeclarationRule) rule)
+					for (AbstractCSSRule rule : rules) {
+						if (rule instanceof CSSDeclarationRule) {
+							StyleDeclarationErrorHandler eh = ((CSSDeclarationRule) rule)
 									.getStyleDeclarationErrorHandler();
 							if (eh.hasErrors()) {
 								reporter.ruleErrors(sheet, i, eh);
