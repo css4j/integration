@@ -171,10 +171,10 @@ class ValueComparator {
 			CSSTypedValue priOther = (CSSTypedValue) otherValue;
 			Type ptype = pri.getPrimitiveType();
 			Type otype = priOther.getPrimitiveType();
-			if (ptype == Type.RGBCOLOR) {
-				if (otype == Type.RGBCOLOR) {
-					RGBAColor color = pri.getRGBColorValue();
-					RGBAColor otherColor = priOther.getRGBColorValue();
+			if (ptype == Type.COLOR) {
+				if (otype == Type.COLOR) {
+					RGBAColor color = pri.toRGBColorValue();
+					RGBAColor otherColor = priOther.toRGBColorValue();
 					if (similarComponentValues(color.getRed(), otherColor.getRed())
 							&& similarComponentValues(color.getGreen(), otherColor.getGreen())
 							&& similarComponentValues(color.getBlue(), otherColor.getBlue())
