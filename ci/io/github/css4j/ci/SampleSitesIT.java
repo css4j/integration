@@ -60,6 +60,7 @@ import org.xml.sax.SAXException;
 
 import io.sf.carte.doc.DocumentException;
 import io.sf.carte.doc.agent.DeviceFactory;
+import io.sf.carte.doc.agent.IllegalOriginException;
 import io.sf.carte.doc.agent.net.DefaultOriginPolicy;
 import io.sf.carte.doc.agent.net.DefaultUserAgent;
 import io.sf.carte.doc.dom.CSSDOMImplementation;
@@ -1066,6 +1067,13 @@ public class SampleSitesIT {
 		return DigestUtils.md5Hex(s);
 	}
 
+	private void checkOrigin(URL url) throws IllegalOriginException {
+		String prot = url.getProtocol();
+		if (!"https".equals(prot) && !"http".equals(prot)) {
+			throw new IllegalOriginException("Invalid origin: " + url.toExternalForm());
+		}
+	}
+
 	class MyDOMUserAgent extends DefaultUserAgent {
 		MyDOMUserAgent() {
 			super(parserFlags, true);
@@ -1075,6 +1083,7 @@ public class SampleSitesIT {
 
 		@Override
 		protected URLConnection openConnection(URL url, long creationDate) throws IOException {
+			checkOrigin(url);
 			URLConnection ucon;
 			if (netcache != null) {
 				String hostname = url.getHost();
@@ -1103,6 +1112,7 @@ public class SampleSitesIT {
 
 		@Override
 		protected URLConnection openConnection(URL url, long creationDate) throws IOException {
+			checkOrigin(url);
 			URLConnection ucon;
 			if (netcache != null) {
 				String hostname = url.getHost();
@@ -1167,6 +1177,7 @@ public class SampleSitesIT {
 			 */
 			@Override
 			public URLConnection openConnection(URL url) throws IOException {
+				checkOrigin(url);
 				URLConnection ucon;
 				if (netcache != null) {
 					String hostname = url.getHost();
