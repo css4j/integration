@@ -26,7 +26,7 @@ import org.w3c.dom.stylesheets.StyleSheet;
 import io.sf.carte.doc.dom.DOMElement;
 import io.sf.carte.doc.style.css.CSSElement;
 import io.sf.carte.doc.style.css.CSSMediaException;
-import io.sf.carte.doc.style.css.ExtendedCSSRule;
+import io.sf.carte.doc.style.css.CSSRule;
 import io.sf.carte.doc.style.css.MediaQueryList;
 import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
@@ -431,7 +431,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 				selectErrorTargetSheet(sheet, sheetIndex);
 				for (int i = 0; i < sacErrors.size(); i++) {
 					CSSParseException ex = sacErrors.get(i);
-					ExtendedCSSRule rule = dseh.getRuleAtError(i);
+					CSSRule rule = dseh.getRuleAtError(i);
 					buf.append("SAC error at [").append(ex.getLineNumber()).append(':').append(ex.getColumnNumber()).append("] ")
 							.append(ex.getMessage());
 					if (rule != null) {

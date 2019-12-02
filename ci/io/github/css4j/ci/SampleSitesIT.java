@@ -52,7 +52,6 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.css.CSSRule;
 import org.w3c.dom.css.CSSStyleSheet;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -73,9 +72,9 @@ import io.sf.carte.doc.style.css.CSSDeclarationRule;
 import io.sf.carte.doc.style.css.CSSDocument;
 import io.sf.carte.doc.style.css.CSSElement;
 import io.sf.carte.doc.style.css.CSSMediaException;
+import io.sf.carte.doc.style.css.CSSRule;
 import io.sf.carte.doc.style.css.CSSStyleSheetList;
 import io.sf.carte.doc.style.css.ErrorHandler;
-import io.sf.carte.doc.style.css.ExtendedCSSRule;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
 import io.sf.carte.doc.style.css.nsac.Parser;
 import io.sf.carte.doc.style.css.nsac.Selector;
@@ -375,7 +374,7 @@ public class SampleSitesIT {
 
 	private boolean compareSheets(CSSDocument otherDoc) {
 		StyleSheetList sheets = document.getStyleSheets();
-		CSSStyleSheetList<? extends ExtendedCSSRule> otherSheets = otherDoc.getStyleSheets();
+		CSSStyleSheetList<? extends CSSRule> otherSheets = otherDoc.getStyleSheets();
 		int sheetlen = sheets.getLength();
 		int othersheetlen = otherSheets.getLength();
 		if (sheetlen != othersheetlen) {
@@ -533,7 +532,7 @@ public class SampleSitesIT {
 			if (groupResult != -1) {
 				result = groupResult;
 			}
-		} else if (ruleType != ExtendedCSSRule.NAMESPACE_RULE) {
+		} else if (ruleType != CSSRule.NAMESPACE_RULE) {
 			if (!checkRule(rule, sheetIndex, ruleIndex, sheet)) {
 				result = ruleType;
 			}
@@ -853,7 +852,7 @@ public class SampleSitesIT {
 			if (different != null) {
 				diff = ((BaseCSSStyleDeclaration) style).diff((BaseCSSStyleDeclaration) otherStyle);
 				sheets = document.getStyleSheets();
-				CSSStyleSheetList<? extends ExtendedCSSRule> otherSheets = docToCompare.getStyleSheets();
+				CSSStyleSheetList<? extends CSSRule> otherSheets = docToCompare.getStyleSheets();
 				for (int i = 0; i < different.length; i++) {
 					String property = different[i];
 					String value = style.getPropertyValue(property);
