@@ -346,8 +346,7 @@ public class SampleSitesIT {
 		for (int i = 0; i < sz; i++) {
 			AbstractCSSStyleSheet sheet = list.item(i);
 			DefaultSheetErrorHandler errHandler = (DefaultSheetErrorHandler) sheet.getErrorHandler();
-			hasErrors = errHandler.hasSacErrors();
-			if (hasErrors || errHandler.hasSacWarnings() || sheet.hasRuleErrorsOrWarnings()) {
+			if (errHandler.hasSacErrors() || errHandler.hasSacWarnings() || sheet.hasRuleErrorsOrWarnings()) {
 				if (sheet.hasRuleErrorsOrWarnings()) {
 					CSSRuleArrayList rules = sheet.getCssRules();
 					for (ExtendedCSSRule rule : rules) {
