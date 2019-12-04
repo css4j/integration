@@ -1069,6 +1069,7 @@ public class SampleSitesIT {
 			super(parserFlags, false);
 			setOriginPolicy(DefaultOriginPolicy.getInstance());
 			getXHTMLDocumentFactory().setStyleCache(true);
+			getXHTMLDocumentFactory().getStyleSheetFactory().setDefaultHTMLUserAgentSheet();
 		}
 
 		@Override
