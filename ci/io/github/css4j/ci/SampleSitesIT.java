@@ -133,6 +133,8 @@ import nu.validator.htmlparser.dom.HtmlDocumentBuilder;
  * its files.</li>
  * <li>'reporter': the type of site error reporter to be used. Default is
  * 'log'.</li>
+ * <li>'reporter.tree.cache-refresh': when the <code>tree</code> error reporter is used,
+ * if set to 'true' it refreshes the files in the cache. Default is 'false'.</li>
  * <li>'dom.strict-error-checking': set strict error checking at the DOM
  * implementation. Default is 'true'.</li>
  * <li>'parser.&lt;flag&gt;': to set the relevant NSAC parser flags.</li>
@@ -147,6 +149,7 @@ public class SampleSitesIT {
 	private static final boolean strictErrorChecking;
 	private static final boolean failOnWarning;
 	private static final int errorReporterType;
+	private static final boolean forceCacheRefresh;
 
 	private static final EnumSet<Parser.Flag> parserFlags = EnumSet.noneOf(Parser.Flag.class);
 
@@ -204,6 +207,7 @@ public class SampleSitesIT {
 			parserFlags.add(Parser.Flag.IEPRIOCHAR);
 		}
 		failOnWarning = "true".equalsIgnoreCase(config.getProperty("fail-on-warning", "false"));
+		forceCacheRefresh = "true".equalsIgnoreCase(config.getProperty("reporter.tree.cache-refresh", "false"));
 	}
 
 	HTMLDocument document;
@@ -1048,7 +1052,7 @@ public class SampleSitesIT {
 			if (netcache != null) {
 				String hostname = url.getHost();
 				String encUrl = encodeString(url.toExternalForm());
-				if (!netcache.isCached(hostname, encUrl)) {
+				if (forceCacheRefresh || !netcache.isCached(hostname, encUrl)) {
 					ucon = super.openConnection(url, creationDate);
 					netcache.cacheFile(url, encUrl, ucon);
 				}
