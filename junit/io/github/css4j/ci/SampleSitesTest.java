@@ -97,6 +97,15 @@ public class SampleSitesTest {
 	}
 
 	@Test
+	public void testIsSameLayeredProperty7() {
+		// animation-fill-mode: forwards
+		ValueFactory factory = new ValueFactory();
+		StyleValue value = factory.parseProperty("forwards");
+		StyleValue other = factory.parseProperty("forwards, forwards");
+		assertTrue(comparator.isSameLayeredProperty(value, other, 2));
+	}
+
+	@Test
 	public void testIsSameLayeredPropertyAuto() {
 		// background-size
 		ValueFactory factory = new ValueFactory();
@@ -282,6 +291,15 @@ public class SampleSitesTest {
 		ValueFactory factory = new ValueFactory();
 		StyleValue other = factory.parseProperty("10 10");
 		assertTrue(comparator.isNotDifferent("border-image-slice", value, other));
+	}
+
+	@Test
+	public void testIsNotDifferentAnimation() {
+		styleDecl.setCssText("animation-fill-mode: forwards;animation-name:foo,bar");
+		StyleValue value = styleDecl.getPropertyCSSValue("animation-fill-mode");
+		ValueFactory factory = new ValueFactory();
+		StyleValue other = factory.parseProperty("forwards,forwards");
+		assertTrue(comparator.isNotDifferent("animation-fill-mode", value, other));
 	}
 
 	@Test

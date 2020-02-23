@@ -104,6 +104,11 @@ class ValueComparator {
 			if (isSameLayeredProperty(value, minivalue, masterLen)) {
 				return true;
 			}
+		} else if (property.startsWith("animation-")) {
+			int masterLen = masterPropertyLength("animation-name");
+			if (isSameLayeredProperty(value, minivalue, masterLen)) {
+				return true;
+			}
 		} else if (property.startsWith("transition-")) {
 			int masterLen = masterPropertyLength("transition-property");
 			if (isSameLayeredProperty(value, minivalue, masterLen)) {
