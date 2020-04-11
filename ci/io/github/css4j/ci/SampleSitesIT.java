@@ -121,7 +121,7 @@ import nu.validator.htmlparser.dom.HtmlDocumentBuilder;
  * 
  * <pre>
  * fail-on-warning=&lt;true|false&gt;
- * cachedir=/path/to/cache/directory
+ * cache.dir=/path/to/cache/directory
  * reporter=log|tree
  * dom.strict-error-checking=true|false
  * parser.&lt;flag&gt;=true|false
@@ -129,12 +129,12 @@ import nu.validator.htmlparser.dom.HtmlDocumentBuilder;
  * <ul>
  * <li>'fail-on-warning': if set to true, a test shall fail even if only
  * warnings were logged.</li>
- * <li>'cachedir': the path to the directory where the network cache can store
+ * <li>'cache.dir': the path to the directory where the network cache can store
  * its files.</li>
  * <li>'reporter': the type of site error reporter to be used. Default is
  * 'log'.</li>
- * <li>'reporter.tree.cache-refresh': when the <code>tree</code> error reporter is used,
- * if set to 'true' it refreshes the files in the cache. Default is 'false'.</li>
+ * <li>'cache.refresh': if set to 'true', refreshes the files in the cache.
+ * Default is 'false'.</li>
  * <li>'dom.strict-error-checking': set strict error checking at the DOM
  * implementation. Default is 'true'.</li>
  * <li>'parser.&lt;flag&gt;': to set the relevant NSAC parser flags.</li>
@@ -162,7 +162,7 @@ public class SampleSitesIT {
 		} catch (IOException e) {
 		}
 		File cachedir = null;
-		String s = config.getProperty("cachedir");
+		String s = config.getProperty("cache.dir");
 		if (s != null) {
 			cachedir = new File(s);
 			if (cachedir.isDirectory()) {
@@ -207,7 +207,7 @@ public class SampleSitesIT {
 			parserFlags.add(Parser.Flag.IEPRIOCHAR);
 		}
 		failOnWarning = "true".equalsIgnoreCase(config.getProperty("fail-on-warning", "false"));
-		forceCacheRefresh = "true".equalsIgnoreCase(config.getProperty("reporter.tree.cache-refresh", "false"));
+		forceCacheRefresh = "true".equalsIgnoreCase(config.getProperty("cache.refresh", "false"));
 	}
 
 	HTMLDocument document;
