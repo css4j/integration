@@ -49,8 +49,8 @@ class ValueComparator {
 	}
 
 	public boolean isNotDifferent(String property, CSSValue value, CSSValue minivalue) {
-		if (value.equals(minivalue)) {
-			// This is almost always going to evaluate to false
+		if (value.equals(minivalue) || minivalue.getPrimitiveType() == Type.INTERNAL) {
+			// The first is almost always going to evaluate to false
 			return true;
 		}
 		String text = value.getCssText();
