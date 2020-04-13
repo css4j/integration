@@ -363,7 +363,7 @@ class ValueComparator {
 					minivalue = minilist.item(0);
 				}
 			}
-			if (value.getCssValueType() == CssType.LIST && (list = (ValueList) minivalue).isCommaSeparated()) {
+			if (value.getCssValueType() == CssType.LIST && (list = (ValueList) value).isCommaSeparated()) {
 				value = list.item(0);
 			}
 			return isSameLayeredPropertyItem(value, minivalue);
