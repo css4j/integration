@@ -33,7 +33,6 @@ import org.w3c.dom.css.CSSStyleSheet;
 import org.w3c.dom.stylesheets.StyleSheet;
 
 import io.sf.carte.doc.style.css.CSSElement;
-import io.sf.carte.doc.style.css.SheetErrorHandler;
 
 /**
  * This reporter stores information in the same tree as the file cache.
@@ -173,14 +172,6 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 		String path = getLinkedSheetInternalPath(parent, uri);
 		writeSerializationError("Reparse error in sheet at " + uri + "\npath: " + path);
 		super.ruleReparseError(parent, ruleIndex, parsedText, ex);
-	}
-
-	@Override
-	public void omIssues(CSSStyleSheet sheet, int sheetIndex, SheetErrorHandler errHandler) {
-		String uri = sheet.getHref();
-		String path = getLinkedSheetInternalPath(sheet, uri);
-		writeError("OM issue(s) in sheet at " + uri + "\npath: " + path);
-		super.omIssues(sheet, sheetIndex, errHandler);
 	}
 
 	@Override
