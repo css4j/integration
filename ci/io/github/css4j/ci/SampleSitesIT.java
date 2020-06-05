@@ -78,6 +78,7 @@ import io.sf.carte.doc.style.css.ErrorHandler;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
 import io.sf.carte.doc.style.css.nsac.Parser;
 import io.sf.carte.doc.style.css.nsac.Selector;
+import io.sf.carte.doc.style.css.nsac.SelectorList;
 import io.sf.carte.doc.style.css.om.AbstractCSSRule;
 import io.sf.carte.doc.style.css.om.AbstractCSSStyleSheet;
 import io.sf.carte.doc.style.css.om.BaseCSSDeclarationRule;
@@ -94,6 +95,7 @@ import io.sf.carte.doc.style.css.om.DummyDeviceFactory;
 import io.sf.carte.doc.style.css.om.GroupingRule;
 import io.sf.carte.doc.style.css.om.StylableDocumentWrapper;
 import io.sf.carte.doc.style.css.om.StyleSheetList;
+import io.sf.carte.doc.style.css.parser.ParseHelper;
 import io.sf.carte.doc.style.css.property.CSSPropertyValueException;
 import io.sf.carte.doc.style.css.property.PropertyDatabase;
 import io.sf.carte.doc.style.css.property.StyleValue;
@@ -522,6 +524,9 @@ public class SampleSitesIT {
 			if (!checkDeclarationRule(stylerule, sheetIndex, ruleIndex, sheet, rule.getMinifiedCssText())) {
 				result = ruleType;
 			}
+			if (!checkSelectors(stylerule, sheetIndex, ruleIndex, sheet)) {
+				result = ruleType;
+			}
 		} else if (rule instanceof BaseCSSDeclarationRule) {
 			BaseCSSDeclarationRule declrule = (BaseCSSDeclarationRule) rule;
 			if (!checkDeclarationRule(declrule, sheetIndex, ruleIndex, sheet, rule.getCssText())) {
@@ -642,6 +647,16 @@ public class SampleSitesIT {
 			}
 		}
 		return result;
+	}
+
+	private boolean checkSelectors(CSSStyleDeclarationRule stylerule, int sheetIndex, int ruleIndex,
+			AbstractCSSStyleSheet sheet) {
+		SelectorList selist = CSSOMBridge.getSelectorList(stylerule);
+		String cssText = stylerule.getCssText();
+		CSSStyleDeclarationRule orule = sheet.createStyleRule();
+		orule.setCssText(cssText);
+		SelectorList oselist = CSSOMBridge.getSelectorList(orule);
+		return ParseHelper.equalSelectorList(selist, oselist);
 	}
 
 	private short checkGroupingRule(GroupingRule rule, int sheetIndex, int ruleIndex, AbstractCSSStyleSheet sheet)
