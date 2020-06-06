@@ -28,6 +28,9 @@ import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
 import io.sf.carte.doc.style.css.nsac.Selector;
+import io.sf.carte.doc.style.css.nsac.SelectorList;
+import io.sf.carte.doc.style.css.om.AbstractCSSStyleSheet;
+import io.sf.carte.doc.style.css.om.CSSStyleDeclarationRule;
 import io.sf.carte.doc.style.css.property.CSSPropertyValueException;
 
 public interface SiteErrorReporter {
@@ -81,6 +84,9 @@ public interface SiteErrorReporter {
 
 	void ruleReparseErrors(String parsedText, String finalText,
 			StyleDeclarationErrorHandler styleDeclarationErrorHandler);
+
+	void ruleSelectorError(CSSStyleDeclarationRule stylerule, SelectorList selist, SelectorList oselist,
+			String selectorText, int sheetIndex, int ruleIndex, AbstractCSSStyleSheet parent);
 
 	void ioError(String href, IOException exception);
 

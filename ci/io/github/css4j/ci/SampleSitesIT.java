@@ -656,7 +656,12 @@ public class SampleSitesIT {
 		CSSStyleDeclarationRule orule = sheet.createStyleRule();
 		orule.setCssText(cssText);
 		SelectorList oselist = CSSOMBridge.getSelectorList(orule);
-		return ParseHelper.equalSelectorList(selist, oselist);
+		boolean result = ParseHelper.equalSelectorList(selist, oselist);
+		if (!result) {
+			reporter.ruleSelectorError(stylerule, selist, oselist, orule.getSelectorText(), sheetIndex, ruleIndex,
+					sheet);
+		}
+		return result;
 	}
 
 	private short checkGroupingRule(GroupingRule rule, int sheetIndex, int ruleIndex, AbstractCSSStyleSheet sheet)
