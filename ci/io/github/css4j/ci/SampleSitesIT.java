@@ -115,16 +115,18 @@ import nu.validator.htmlparser.dom.HtmlDocumentBuilder;
  * <code>cssText</code> serializations for rules can be re-parsed to an
  * identical rule.
  * <p>
- * You can put as many websites as you want in "samplesites.txt", and they can
- * be commented out with the '#' character at the beginning of the line. There
- * is a "samplesites.properties" that can be used for configuration, supporting
- * the following options:
+ * You can put as many websites as you want in "samplesites.txt" (or what you
+ * configured in the {@code sites.file} property), and they can be commented out
+ * with the '#' character at the beginning of the line. There is a
+ * "samplesites.properties" that can be used for configuration, supporting the
+ * following options:
  * </p>
  * 
  * <pre>
- * fail-on-warning=&lt;true|false&gt;
- * cache.dir=/path/to/cache/directory
+ * fail-on-warning=true|false
+ * cache.dir=&lt;/path/to/cache/directory&gt;
  * reporter=log|tree
+ * sites.file=&lt;samplesites.txt&gt;
  * dom.strict-error-checking=true|false
  * parser.&lt;flag&gt;=true|false
  * </pre>
@@ -137,6 +139,9 @@ import nu.validator.htmlparser.dom.HtmlDocumentBuilder;
  * 'log'.</li>
  * <li>'cache.refresh': if set to 'true', refreshes the files in the cache.
  * Default is 'false'.</li>
+ * <li>'sites.file': the filename of the list of URLs. Default is
+ * 'samplesites.txt'. Beware that this is a filename to be read from the
+ * classpath, and not a filesystem path.</li>
  * <li>'dom.strict-error-checking': set strict error checking at the DOM
  * implementation. Default is 'true'.</li>
  * <li>'parser.&lt;flag&gt;': to set the relevant NSAC parser flags.</li>
@@ -152,6 +157,7 @@ public class SampleSitesIT {
 	private static final boolean failOnWarning;
 	private static final int errorReporterType;
 	private static final boolean forceCacheRefresh;
+	private static final String urlsFilename;
 
 	private static final EnumSet<Parser.Flag> parserFlags = EnumSet.noneOf(Parser.Flag.class);
 
@@ -171,6 +177,8 @@ public class SampleSitesIT {
 				netcache = new NetCache(cachedir);
 			}
 		}
+		urlsFilename = config.getProperty("sites.file", "samplesites.txt");
+		//
 		s = config.getProperty("reporter", "log");
 		if (s.equalsIgnoreCase("tree")) {
 			errorReporterType = 1;
@@ -256,7 +264,7 @@ public class SampleSitesIT {
 	@Parameters
 	public static Collection<Object[]> data() throws IOException {
 		List<Object[]> sites = new LinkedList<Object[]>();
-		BufferedReader re = new BufferedReader(loadFileFromClasspath("samplesites.txt"));
+		BufferedReader re = new BufferedReader(loadFileFromClasspath(urlsFilename));
 		String site;
 		while ((site = re.readLine()) != null) {
 			if (site.length() != 0 && site.charAt(0) != '#') {
