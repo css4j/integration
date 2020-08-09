@@ -25,7 +25,7 @@ To use it with Failsafe, perhaps you want to set up a classpath directory in the
  <plugin>
    <groupId>org.apache.maven.plugins</groupId>
    <artifactId>maven-failsafe-plugin</artifactId>
-   <version>3.0.0-M3</version>
+   <version>3.0.0-M4</version>
    <configuration>
      <additionalClasspathElements>
        <additionalClasspathElement>/my/path/to/ci</additionalClasspathElement>
