@@ -374,17 +374,17 @@ public class SampleSitesIT {
 						}
 					}
 				}
-				if (errHandler.hasOMErrors() || errHandler.hasOMWarnings()) {
-					reporter.omIssues(sheet, i, errHandler);
-					if (errHandler.hasOMErrors()) {
-						hasErrors = true;
-					}
-				}
 				if (errHandler.hasSacErrors() || errHandler.hasSacWarnings()) {
 					reporter.sacIssues(sheet, i, errHandler);
 					if (errHandler.hasSacErrors()) {
 						hasErrors = true;
 					}
+				}
+			}
+			if (errHandler.hasOMErrors() || errHandler.hasOMWarnings()) {
+				reporter.omIssues(sheet, i, errHandler);
+				if (errHandler.hasOMErrors()) {
+					hasErrors = true;
 				}
 			}
 		}
