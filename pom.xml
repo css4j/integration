@@ -66,13 +66,19 @@
 		<scope>compile</scope>
 		<optional>false</optional>
 	</dependency>
-	<!-- https://mvnrepository.com/artifact/nu.validator.htmlparser/htmlparser -->
 	<dependency>
 		<groupId>nu.validator</groupId>
 		<artifactId>htmlparser</artifactId>
 		<version>1.4.16</version>
 		<scope>compile</scope>
 		<optional>false</optional>
+	</dependency>
+	<dependency>
+		<groupId>xpp3</groupId>
+		<artifactId>xpp3</artifactId>
+		<version>1.1.4c</version>
+		<scope>compile</scope>
+		<optional>true</optional>
 	</dependency>
   </dependencies>
   <!-- Build Settings -->
