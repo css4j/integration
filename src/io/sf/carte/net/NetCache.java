@@ -30,12 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.zip.GZIPInputStream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class NetCache {
-
-	static Logger log = LoggerFactory.getLogger(NetCache.class.getName());
 
 	private static final String METADATA_FILENAME = "metadata.txt";
 
