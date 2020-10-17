@@ -1215,6 +1215,7 @@ public class SampleSitesIT {
 		protected AgentXHTMLDocument parseDocument(Reader re) throws DocumentException, IOException {
 			InputSource source = new InputSource(re);
 			HtmlDocumentBuilder builder = new HtmlDocumentBuilder(getXHTMLDocumentFactory());
+			builder.setIgnoringComments(false);
 			try {
 				return (AgentXHTMLDocument) builder.parse(source);
 			} catch (SAXException e) {
@@ -1224,6 +1225,9 @@ public class SampleSitesIT {
 	}
 
 	class WrapperFactory extends DOMCSSStyleSheetFactory {
+
+		private static final long serialVersionUID = 1L;
+
 		WrapperFactory() {
 			super(parserFlags);
 		}
