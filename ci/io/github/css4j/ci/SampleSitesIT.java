@@ -1063,7 +1063,6 @@ public class SampleSitesIT {
 			if (elm.getSelectorMatcher().matches(sel[k])) {
 				selectorList.add(sel[k]);
 				if (!otherdocElm.getSelectorMatcher().matches(sel[k])) {
-					otherdocElm.getSelectorMatcher().matches(sel[k]);
 					unmatched.add(sel[k]);
 				}
 			}
