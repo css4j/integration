@@ -69,7 +69,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void fail(String message, DOMElement elm, String[] properties, String backendName) {
+	public void computedStyleExtraProperties(String message, DOMElement elm, String[] properties, String backendName) {
 		StringBuilder buf = new StringBuilder(message.length() + 128);
 		buf.append('[').append(backendName).append(']').append(' ').append(message).append(" at: ");
 		String nsuri = elm.getNamespaceURI();
@@ -87,7 +87,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 		for (String property : properties) {
 			buf.append(' ').append(property);
 		}
-		fail(buf.toString());
+		writeError(buf.toString());
 	}
 
 	@Override
@@ -106,6 +106,12 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 		} catch (IOException e) {
 		}
 		org.junit.Assert.fail(message);
+	}
+
+	@Override
+	public void sideComparison(String message) {
+		writeError("Failed comparison to " + rightSide + '.');
+		writeError(message);
 	}
 
 	@Override

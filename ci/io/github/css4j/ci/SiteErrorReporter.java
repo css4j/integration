@@ -39,6 +39,8 @@ public interface SiteErrorReporter {
 
 	void setSideDescriptions(String leftSide, String rightSide);
 
+	void sideComparison(String message);
+
 	void leftHasMoreSheets(List<CSSStyleSheet> missingSheets, int smallerCount);
 
 	void rightHasMoreSheets(List<CSSStyleSheet> missingSheets, int smallerCount);
@@ -110,7 +112,7 @@ public interface SiteErrorReporter {
 
 	void fail(String message);
 
-	void fail(String message, DOMElement elm, String[] properties, String backendName);
+	void computedStyleExtraProperties(String message, DOMElement elm, String[] properties, String backendName);
 
 	void fail(String message, DOMException exception);
 
