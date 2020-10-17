@@ -20,6 +20,7 @@ import java.util.ListIterator;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.SACMediaList;
 import org.w3c.css.sac.Selector;
+import org.w3c.css.sac.SelectorList;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -33,6 +34,8 @@ import io.sf.carte.doc.style.css.ExtendedCSSRule;
 import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
+import io.sf.carte.doc.style.css.om.AbstractCSSStyleSheet;
+import io.sf.carte.doc.style.css.om.CSSStyleDeclarationRule;
 import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler;
 import io.sf.carte.doc.style.css.om.DefaultStyleDeclarationErrorHandler;
 import io.sf.carte.doc.style.css.om.RuleParseException;
@@ -66,7 +69,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void fail(String message, DOMElement elm, String[] properties, String backendName) {
+	public void computedStyleExtraProperties(String message, DOMElement elm, String[] properties, String backendName) {
 		StringBuilder buf = new StringBuilder(message.length() + 128);
 		buf.append('[').append(backendName).append(']').append(' ').append(message).append(" at: ");
 		String nsuri = elm.getNamespaceURI();
@@ -84,7 +87,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 		for (String property : properties) {
 			buf.append(' ').append(property);
 		}
-		fail(buf.toString());
+		writeError(buf.toString());
 	}
 
 	@Override
@@ -103,6 +106,12 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 		} catch (IOException e) {
 		}
 		org.junit.Assert.fail(message);
+	}
+
+	@Override
+	public void sideComparison(String message) {
+		writeError("Failed comparison to " + rightSide + '.');
+		writeError(message);
 	}
 
 	@Override
@@ -181,6 +190,16 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	@Override
 	public void presentationalHintError(DOMElement element, DOMException ex) {
 		writeError("Presentational hint error (" + element.getTagName() + ").", ex);
+	}
+
+	@Override
+	public void ruleSelectorError(CSSStyleDeclarationRule stylerule, SelectorList selist, SelectorList otherSelist,
+			String selectorText, int sheetIndex, int ruleIndex, AbstractCSSStyleSheet parent) {
+		writeSerializationError("Selector reparse error in rule: " + ruleIndex + " in sheet " + parent.getHref() + ":");
+		writeSerializationError("List 1 (CSSOM): " + stylerule.getSelectorText());
+		writeSerializationError("List 2 (CSSOM): " + selectorText);
+		writeSerializationError("List 1  (NSAC): " + selist.toString());
+		writeSerializationError("List 2  (NSAC): " + otherSelist.toString());
 	}
 
 	@Override

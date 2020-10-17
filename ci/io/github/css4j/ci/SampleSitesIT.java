@@ -34,6 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -49,15 +50,21 @@ import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.css.sac.Selector;
+import org.w3c.css.sac.SelectorList;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.css.CSSRule;
+import org.w3c.dom.css.CSSRuleList;
 import org.w3c.dom.css.CSSStyleSheet;
+import org.w3c.dom.stylesheets.MediaList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import io.github.css4j.ci.SampleSitesIT.MyDOM4JUserAgent;
+import io.github.css4j.ci.SampleSitesIT.MyDOMUserAgent;
+import io.github.css4j.ci.SampleSitesIT.WrapperFactory;
 import io.sf.carte.doc.DocumentException;
 import io.sf.carte.doc.agent.DeviceFactory;
 import io.sf.carte.doc.agent.IllegalOriginException;
@@ -77,6 +84,8 @@ import io.sf.carte.doc.style.css.CSSMediaException;
 import io.sf.carte.doc.style.css.CSSStyleSheetList;
 import io.sf.carte.doc.style.css.ErrorHandler;
 import io.sf.carte.doc.style.css.ExtendedCSSRule;
+import io.sf.carte.doc.style.css.ExtendedCSSRuleList;
+import io.sf.carte.doc.style.css.ExtendedCSSStyleSheet;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
 import io.sf.carte.doc.style.css.nsac.Parser2;
 import io.sf.carte.doc.style.css.om.AbstractCSSRule;
@@ -84,18 +93,16 @@ import io.sf.carte.doc.style.css.om.AbstractCSSStyleSheet;
 import io.sf.carte.doc.style.css.om.BaseCSSDeclarationRule;
 import io.sf.carte.doc.style.css.om.BaseCSSStyleDeclaration;
 import io.sf.carte.doc.style.css.om.BaseCSSStyleSheet;
-import io.sf.carte.doc.style.css.om.CSSOMBridge;
 import io.sf.carte.doc.style.css.om.CSSRuleArrayList;
 import io.sf.carte.doc.style.css.om.CSSStyleDeclarationRule;
 import io.sf.carte.doc.style.css.om.ComputedCSSStyle;
 import io.sf.carte.doc.style.css.om.DOMCSSStyleSheetFactory;
 import io.sf.carte.doc.style.css.om.DefaultErrorHandler;
 import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler;
-import io.sf.carte.doc.style.css.om.DummyDeviceFactory;
 import io.sf.carte.doc.style.css.om.GroupingRule;
 import io.sf.carte.doc.style.css.om.StylableDocumentWrapper;
 import io.sf.carte.doc.style.css.om.StyleSheetList;
-import io.sf.carte.doc.style.css.om.TestCSSStyleSheetFactory;
+import io.sf.carte.doc.style.css.parser.ParseHelper;
 import io.sf.carte.doc.style.css.property.CSSPropertyValueException;
 import io.sf.carte.doc.style.css.property.PropertyDatabase;
 import io.sf.carte.doc.style.css.property.StyleValue;
@@ -307,7 +314,7 @@ public class SampleSitesIT {
 			reporter.fail("Failed preparation of style sheets", e);
 		}
 		if (!compResult) {
-			reporter.fail("Different number of style sheets in backend: DOM4J");
+			reporter.fail("Different style sheets in backend: DOM4J");
 		}
 		// Check rules (re-parse cssText serialization, including optimized serialization)
 		short reparseResult = checkRuleSerialization();
@@ -325,6 +332,14 @@ public class SampleSitesIT {
 		factory.setDefaultHTMLUserAgentSheet();
 		CSSDocument wrappedHtml = factory.createCSSDocument(document);
 		reporter.setSideDescriptions("Native implementation", "DOM wrapper");
+		try {
+			compResult = compareSheets(wrappedHtml);
+		} catch (DOMException e) {
+			reporter.fail("Failed preparation of style sheets", e);
+		}
+		if (!compResult) {
+			reporter.fail("Different style sheets in backend: DOM wrapper");
+		}
 		int count = checkTree(html, wrappedHtml.getDocumentElement(), wrappedHtml, "DOM wrapper", true);
 		// Check the computed styles
 		try {
@@ -432,7 +447,58 @@ public class SampleSitesIT {
 			}
 			return false;
 		}
-		return true;
+		// Compare the two sheet lists
+		boolean ret = true;
+		for (int i = 0; i < sheetlen; i++) {
+			AbstractCSSStyleSheet csssheet = sheets.item(i);
+			ExtendedCSSStyleSheet<? extends ExtendedCSSRule> othercsssheet = otherSheets.item(i);
+			String href = csssheet.getHref();
+			String ohref = othercsssheet.getHref();
+			if (!Objects.equals(href, ohref)) {
+				reporter.sideComparison("Different href in sheet " + i + ", " + href + " vs " + ohref);
+				ret = false;
+			}
+			MediaList media = csssheet.getMedia();
+			MediaList omedia = othercsssheet.getMedia();
+			if (!Objects.equals(media, omedia)) {
+				reporter.sideComparison("Different media in sheet " + i + ", " + media + " vs " + omedia);
+				ret = false;
+			}
+			String title = csssheet.getTitle();
+			String otitle = othercsssheet.getTitle();
+			if (title == null) {
+				title = "";
+			}
+			if (otitle == null) {
+				otitle = "";
+			}
+			if (!title.equals(otitle)) {
+				reporter.sideComparison("Different title in sheet " + i + ", " + title + " vs " + otitle);
+				ret = false;
+			}
+			// Rules
+			CSSRuleArrayList rules = csssheet.getCssRules();
+			ExtendedCSSRuleList<? extends ExtendedCSSRule> orules = othercsssheet.getCssRules();
+			int n = rules.getLength();
+			if (n != orules.getLength()) {
+				reporter.sideComparison(
+						"Different number of rules in sheet " + i + ", " + n + " vs " + orules.getLength());
+				ret = false;
+			}
+			if (!ret) {
+				break;
+			}
+			for (int j = 0; j < n; j++) {
+				AbstractCSSRule rule = rules.item(j);
+				AbstractCSSRule orule = (AbstractCSSRule) orules.item(j);
+				if (!rule.equals(orule)) {
+					reporter.sideComparison("Different rules in sheet " + i + ", rule " + j + ": " + rule.getCssText()
+							+ " vs " + orule.getCssText());
+					ret = false;
+				}
+			}
+		}
+		return ret;
 	}
 
 	private boolean checkDocumentHandler(HTMLDocument document) {
@@ -536,6 +602,9 @@ public class SampleSitesIT {
 				result = ruleType;
 			}
 			if (!checkDeclarationRule(stylerule, sheetIndex, ruleIndex, sheet, rule.getMinifiedCssText())) {
+				result = ruleType;
+			}
+			if (!checkSelectors(stylerule, sheetIndex, ruleIndex, sheet)) {
 				result = ruleType;
 			}
 		} else if (rule instanceof BaseCSSDeclarationRule) {
@@ -657,31 +726,20 @@ public class SampleSitesIT {
 				result = false;
 			}
 		}
-		if (rule.getType() != CSSRule.STYLE_RULE && result && serializedText.indexOf('\ufffd') == -1) {
-			String reparsed = other.getCssText();
-			if (!checkRulePreamble(sheet, sheetIndex, ruleIndex, serializedText, reparsed)) {
-				result = false;
-			}
-		}
 		return result;
 	}
 
-	private boolean checkRulePreamble(AbstractCSSStyleSheet sheet, int sheetIndex, int ruleIndex, String serializedText,
-			String reparsed) {
-		boolean result = true;
-		int lbi = serializedText.indexOf('{');
-		int lbirep = reparsed.indexOf('{');
-		if (lbi != -1) {
-			if (lbirep == -1) {
-				result = false;
-			} else {
-				String preamble = serializedText.substring(0, lbi).trim();
-				String repPreamble = reparsed.substring(0, lbirep).trim();
-				if (!preamble.equalsIgnoreCase(repPreamble)) {
-					reporter.ruleReparseIssue(sheet, ruleIndex, serializedText, reparsed);
-					result = false;
-				}
-			}
+	private boolean checkSelectors(CSSStyleDeclarationRule stylerule, int sheetIndex, int ruleIndex,
+			AbstractCSSStyleSheet sheet) {
+		SelectorList selist = CSSOMBridge.getSelectorList(stylerule);
+		String cssText = stylerule.getCssText();
+		CSSStyleDeclarationRule orule = sheet.createStyleRule();
+		orule.setCssText(cssText);
+		SelectorList oselist = CSSOMBridge.getSelectorList(orule);
+		boolean result = ParseHelper.equalSelectorList(selist, oselist);
+		if (!result) {
+			reporter.ruleSelectorError(stylerule, selist, oselist, orule.getSelectorText(), sheetIndex, ruleIndex,
+					sheet);
 		}
 		return result;
 	}
@@ -689,11 +747,6 @@ public class SampleSitesIT {
 	private short checkGroupingRule(GroupingRule rule, int sheetIndex, int ruleIndex, AbstractCSSStyleSheet sheet)
 			throws DOMException, IOException {
 		short result = -1;
-		String serializedText = rule.getCssText();
-		AbstractCSSRule other = rule.clone(sheet);
-		if (!checkRulePreamble(sheet, sheetIndex, ruleIndex, serializedText, other.getCssText())) {
-			result = rule.getType();
-		}
 		short ruleListResult = checkRuleListSerialization(rule.getCssRules(), sheetIndex, sheet);
 		if (ruleListResult != -1) {
 			result = ruleListResult;
@@ -772,10 +825,6 @@ public class SampleSitesIT {
 
 	private int checkTree(DOMElement elm, CSSElement otherdocElm, CSSDocument docToCompare, String backendName,
 			boolean ignoreNonCssHints) throws IOException {
-		if (!compareComputedStyles(elm, otherdocElm, docToCompare, backendName, ignoreNonCssHints)) {
-			reporter.fail("Different computed styles found");
-			return 0;
-		}
 		NodeList list = elm.getChildNodes();
 		NodeList dom4jList = otherdocElm.getChildNodes();
 		int sz = list.getLength();
@@ -784,6 +833,7 @@ public class SampleSitesIT {
 			reporter.fail("Different number of child at element " + elm.getTagName() + " for " + backendName);
 			return 0;
 		}
+		//
 		int count = 0;
 		int delta = 0;
 		for (int i = 0; i < sz; i++) {
@@ -802,6 +852,11 @@ public class SampleSitesIT {
 				count += checkTree((DOMElement) node, (CSSElement) dom4jNode, docToCompare, backendName, ignoreNonCssHints);
 			}
 		}
+		//
+		if (!compareComputedStyles(elm, otherdocElm, docToCompare, backendName, ignoreNonCssHints)) {
+			reporter.fail("Different computed styles found");
+			return 0;
+		}
 		return count;
 	}
 
@@ -815,6 +870,7 @@ public class SampleSitesIT {
 			Diff<String> diff = ((BaseCSSStyleDeclaration) style).diff((BaseCSSStyleDeclaration) otherStyle);
 			String[] left = diff.getLeftSide();
 			String[] right = diff.getRightSide();
+			String[] different = diff.getDifferent();
 			CSSStyleSheetList<?> sheets;
 			if (left != null) {
 				// Report only if non-CSS presentational hints cannot be the reason
@@ -857,8 +913,13 @@ public class SampleSitesIT {
 					}
 				}
 				if (!retval) {
-					reporter.fail("Tree comparison failed, first document had more properties", elm, left, backendName);
-					return false;
+					if (right == null && different == null) {
+						reporter.computedStyleExtraProperties(
+								"Tree comparison failed, first document had more properties", elm, left, backendName);
+						return false;
+					} else if (failinfo == null) {
+						failinfo = "Tree comparison failed, first document had more properties";
+					}
 				}
 			}
 			if (right != null) {
@@ -893,12 +954,15 @@ public class SampleSitesIT {
 					}
 				}
 				if (!retval) {
-					reporter.fail("Tree comparison failed: " + backendName + " has more properties.", elm, right,
-							backendName);
-					return false;
+					if (different == null) {
+						reporter.computedStyleExtraProperties("Tree comparison failed: " + backendName + " has more properties.", elm, right,
+								backendName);
+						return false;
+					} else if (failinfo == null) {
+						failinfo = "Tree comparison failed: " + backendName + " has more properties.";
+					}
 				}
 			}
-			String[] different = diff.getDifferent();
 			if (different != null) {
 				diff = ((BaseCSSStyleDeclaration) style).diff((BaseCSSStyleDeclaration) otherStyle);
 				sheets = document.getStyleSheets();
@@ -1036,7 +1100,8 @@ public class SampleSitesIT {
 		for (int i = 0; i < sz; i++) {
 			Node node = list.item(i + delta);
 			Node nodeo = other.item(i);
-			if (node.getNodeType() != nodeo.getNodeType() || !node.getNodeName().equals(nodeo.getNodeName())) {
+			if (node.getNodeType() != nodeo.getNodeType() || !node.getNodeName().equals(nodeo.getNodeName())
+					|| !Objects.equals(node.getNodeValue(), nodeo.getNodeValue())) {
 				nodediff.add(nodeo);
 				if (countdiff != 0) {
 					delta--;
@@ -1047,7 +1112,10 @@ public class SampleSitesIT {
 		if (countdiff != 0) {
 			for (int i = 0; i < countdiff; i++) {
 				Node nodeo = other.item(i + sz);
-				if (nodeo.getNodeType() == Node.ELEMENT_NODE) {
+				short type = nodeo.getNodeType();
+				final String nodeval;
+				if (type == Node.ELEMENT_NODE || (type == Node.TEXT_NODE && (nodeval = nodeo.getNodeValue()) != null
+						&& nodeval.trim().length() != 0)) {
 					nodediff.add(nodeo);
 				}
 			}

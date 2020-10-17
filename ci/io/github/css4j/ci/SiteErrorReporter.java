@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.w3c.css.sac.Selector;
+import org.w3c.css.sac.SelectorList;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.css.CSSStyleSheet;
@@ -28,6 +29,8 @@ import io.sf.carte.doc.style.css.CSSMediaException;
 import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
+import io.sf.carte.doc.style.css.om.AbstractCSSStyleSheet;
+import io.sf.carte.doc.style.css.om.CSSStyleDeclarationRule;
 import io.sf.carte.doc.style.css.property.CSSPropertyValueException;
 
 public interface SiteErrorReporter {
@@ -35,6 +38,8 @@ public interface SiteErrorReporter {
 	void startSiteReport(URL url) throws IOException;
 
 	void setSideDescriptions(String leftSide, String rightSide);
+
+	void sideComparison(String message);
 
 	void leftHasMoreSheets(List<CSSStyleSheet> missingSheets, int smallerCount);
 
@@ -82,6 +87,9 @@ public interface SiteErrorReporter {
 	void ruleReparseErrors(String parsedText, String finalText,
 			StyleDeclarationErrorHandler styleDeclarationErrorHandler);
 
+	void ruleSelectorError(CSSStyleDeclarationRule stylerule, SelectorList selist, SelectorList oselist,
+			String selectorText, int sheetIndex, int ruleIndex, AbstractCSSStyleSheet parent);
+
 	void ioError(String href, IOException exception);
 
 	void differentNodes(DOMElement parent, LinkedList<Node> nodediff);
@@ -104,7 +112,7 @@ public interface SiteErrorReporter {
 
 	void fail(String message);
 
-	void fail(String message, DOMElement elm, String[] properties, String backendName);
+	void computedStyleExtraProperties(String message, DOMElement elm, String[] properties, String backendName);
 
 	void fail(String message, DOMException exception);
 
