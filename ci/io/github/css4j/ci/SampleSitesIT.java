@@ -829,7 +829,7 @@ public class SampleSitesIT {
 		NodeList dom4jList = otherdocElm.getChildNodes();
 		int sz = list.getLength();
 		if (sz != dom4jList.getLength()) {
-			compareChildList(list, dom4jList, elm);
+			compareChildList(list, dom4jList, elm, backendName);
 			reporter.fail("Different number of child at element " + elm.getTagName() + " for " + backendName);
 			return 0;
 		}
@@ -1080,7 +1080,8 @@ public class SampleSitesIT {
 		return unmatched;
 	}
 
-	private void compareChildList(NodeList domlist1, NodeList domlist2, DOMElement parent) throws IOException {
+	private void compareChildList(NodeList domlist1, NodeList domlist2, DOMElement parent, String backendName)
+			throws IOException {
 		int sz1 = domlist1.getLength();
 		int sz2 = domlist2.getLength();
 		NodeList list, other;
@@ -1122,7 +1123,8 @@ public class SampleSitesIT {
 		}
 		if (!nodediff.isEmpty()) {
 			reporter.differentNodes(parent, nodediff);
-			reporter.fail("Found " + nodediff.size() + " different node(s) for parent: " + parent.getStartTag());
+			reporter.fail(backendName + " comparison: found " + nodediff.size() + " different node(s) for parent: "
+					+ parent.getStartTag());
 		}
 	}
 
