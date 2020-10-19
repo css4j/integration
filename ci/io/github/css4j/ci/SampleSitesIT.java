@@ -537,7 +537,7 @@ public class SampleSitesIT {
 					}
 				}
 			}
-			HashMap<String, IOException> ruleio = eh.getRuleIOErrors();
+			HashMap<String, IOException> ruleio = eh.getIOErrors();
 			if (ruleio != null) {
 				Iterator<Entry<String, IOException>> it = ruleio.entrySet().iterator();
 				while (it.hasNext()) {
