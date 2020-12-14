@@ -186,7 +186,8 @@
 			<artifactId>maven-failsafe-plugin</artifactId>
 			<version>3.0.0-M5</version>
 			<configuration>
-				<forkCount>0</forkCount>
+				<forkCount>4</forkCount>
+				<reuseForks>true</reuseForks>
 				<argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
 				<additionalClasspathElements>
 					<additionalClasspathElement>${project.basedir}/ci</additionalClasspathElement>
@@ -204,17 +205,19 @@
 	</plugins>
 	<resources>
 		<resource>
-			<directory>${project.build.sourceDirectory}</directory>
-			<excludes>
-				<exclude>**/*.java</exclude>
-			</excludes>
-		</resource>
-		<resource>
 			<directory>${project.basedir}</directory>
 			<includes>
 				<include>LICENSE.txt</include>
 			</includes>
 		</resource>
 	</resources>
+	<testResources>
+		<testResource>
+			<directory>${project.basedir}/ci</directory>
+			<excludes>
+				<exclude>**/*.java</exclude>
+			</excludes>
+		</testResource>
+	</testResources>
   </build>
 </project>
