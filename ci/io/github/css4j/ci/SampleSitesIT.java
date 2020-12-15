@@ -49,8 +49,10 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.css.CSSStyleSheet;
@@ -63,10 +65,12 @@ import io.sf.carte.doc.agent.DeviceFactory;
 import io.sf.carte.doc.agent.IllegalOriginException;
 import io.sf.carte.doc.agent.net.DefaultOriginPolicy;
 import io.sf.carte.doc.agent.net.DefaultUserAgent;
+import io.sf.carte.doc.dom.AttributeNamedNodeMap;
 import io.sf.carte.doc.dom.CSSDOMImplementation;
 import io.sf.carte.doc.dom.DOMElement;
 import io.sf.carte.doc.dom.HTMLDocument;
 import io.sf.carte.doc.dom.HTMLElement;
+import io.sf.carte.doc.dom.XMLDocumentBuilder;
 import io.sf.carte.doc.dom4j.DOM4JUserAgent;
 import io.sf.carte.doc.dom4j.DOM4JUserAgent.AgentXHTMLDocumentFactory.AgentXHTMLDocument;
 import io.sf.carte.doc.style.css.CSSComputedProperties;
@@ -105,7 +109,8 @@ import io.sf.carte.doc.style.css.property.StyleValue;
 import io.sf.carte.doc.xml.dtd.DefaultEntityResolver;
 import io.sf.carte.net.NetCache;
 import io.sf.carte.util.Diff;
-import nu.validator.htmlparser.dom.HtmlDocumentBuilder;
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
 
 /**
  * 
@@ -311,7 +316,8 @@ public class SampleSitesIT {
 		// Compare to DOM4J computed styles
 		HTMLElement html = document.getDocumentElement();
 		CSSElement dom4jHtml = dom4jdoc.getDocumentElement();
-		checkTree(html, dom4jHtml, dom4jdoc, "DOM4J", false);
+		// Attr.getName() is broken in DOM4J, cannot compare attributes.
+		checkTree(html, dom4jHtml, dom4jdoc, "DOM4J", false, false);
 		/*
 		 * Now compare native DOM to DOM Wrapper computed styles
 		 */
@@ -330,7 +336,7 @@ public class SampleSitesIT {
 		if (!compResult) {
 			reporter.fail("Different style sheets in backend: DOM wrapper");
 		}
-		int count = checkTree(html, wrappedHtml.getDocumentElement(), wrappedHtml, "DOM wrapper", true);
+		int count = checkTree(html, wrappedHtml.getDocumentElement(), wrappedHtml, "DOM wrapper", true, false);
 		// Check the computed styles
 		try {
 			document.setTargetMedium("screen");
@@ -814,12 +820,12 @@ public class SampleSitesIT {
 	}
 
 	private int checkTree(DOMElement elm, CSSElement otherdocElm, CSSDocument docToCompare, String backendName,
-			boolean ignoreNonCssHints) throws IOException {
+			boolean ignoreNonCssHints, boolean compareAttributes) throws IOException {
 		NodeList list = elm.getChildNodes();
-		NodeList dom4jList = otherdocElm.getChildNodes();
+		NodeList otherList = otherdocElm.getChildNodes();
 		int sz = list.getLength();
-		if (sz != dom4jList.getLength()) {
-			compareChildList(list, dom4jList, elm, backendName);
+		if (sz != otherList.getLength()) {
+			compareChildList(list, otherList, elm, backendName);
 			reporter.fail("Different number of child at element " + elm.getTagName() + " for " + backendName);
 			return 0;
 		}
@@ -828,18 +834,26 @@ public class SampleSitesIT {
 		int delta = 0;
 		for (int i = 0; i < sz; i++) {
 			Node node = list.item(i);
-			Node dom4jNode = dom4jList.item(i + delta);
+			Node otherNode = otherList.item(i + delta);
 			if (node.getNodeType() == Node.ELEMENT_NODE) {
-				while (dom4jNode != null && dom4jNode.getNodeType() != Node.ELEMENT_NODE) {
+				while (otherNode != null && otherNode.getNodeType() != Node.ELEMENT_NODE) {
 					delta++;
-					dom4jNode = dom4jList.item(i + delta);
+					otherNode = otherList.item(i + delta);
 				}
-				assertNotNull(dom4jNode);
-				if (!node.getLocalName().equalsIgnoreCase(dom4jNode.getLocalName())) {
-					assertEquals(node.getLocalName(), dom4jNode.getLocalName());
+				assertNotNull(otherNode);
+				if (!node.getLocalName().equalsIgnoreCase(otherNode.getLocalName())) {
+					assertEquals(node.getLocalName(), otherNode.getLocalName());
 				}
+				// Check attributes
+				DOMElement child = (DOMElement) node;
+				CSSElement otherChild = (CSSElement) otherNode;
+				if (compareAttributes && !compareAttributes(child, child.getAttributes(), otherChild.getAttributes())) {
+					return 0;
+				}
+				//
 				count++;
-				count += checkTree((DOMElement) node, (CSSElement) dom4jNode, docToCompare, backendName, ignoreNonCssHints);
+				count += checkTree((DOMElement) node, (CSSElement) otherNode, docToCompare, backendName,
+						ignoreNonCssHints, compareAttributes);
 			}
 		}
 		//
@@ -848,6 +862,57 @@ public class SampleSitesIT {
 			return 0;
 		}
 		return count;
+	}
+
+	private boolean compareAttributes(DOMElement child, AttributeNamedNodeMap attrs, NamedNodeMap otherAttrs) {
+		int len = attrs.getLength();
+		int otherLen = otherAttrs.getLength();
+		if (len > otherLen) {
+			reporter.fail("Native DOM has more attributes in element: " + child.getStartTag());
+			return false;
+		} else if (len < otherLen) {
+			reporter.fail("Right side has more attributes in element: " + child.getStartTag());
+			return false;
+		}
+		if (!attrs.isEmpty()) {
+			Iterator<Attr> it = attrs.iterator();
+			while (it.hasNext()) {
+				Attr attr = it.next();
+				short ret = compareAttribute(child, attr, otherAttrs);
+				if (ret == 2) {
+					reporter.fail("Element " + child.getStartTag() + ": no attribute " + attr.getName()
+							+ " in other element.");
+					return false;
+				} else if (ret == 1) {
+					reporter.fail("Element " + child.getStartTag() + ": different value for attribute " + attr.getName()
+							+ " in other element.");
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	private short compareAttribute(DOMElement child, Attr attr, NamedNodeMap otherAttrs) {
+		String name = attr.getName();
+		Node otherAttr = otherAttrs.getNamedItem(name);
+		if (otherAttr == null) {
+			for (int i = 0; i < otherAttrs.getLength(); i++) {
+				otherAttr = otherAttrs.item(i);
+				if (name.equalsIgnoreCase(otherAttr.getNodeName())) {
+					if (attr.getValue().trim().equals(otherAttr.getNodeValue().trim())) {
+						return 0;
+					}
+					return 1;
+				}
+			}
+			return 2;
+		} else {
+			if (attr.getValue().trim().equals(otherAttr.getNodeValue().trim())) {
+				return 0;
+			}
+			return 1;
+		}
 	}
 
 	private boolean compareComputedStyles(DOMElement elm, CSSElement otherdocElm, CSSDocument docToCompare,
@@ -1213,8 +1278,13 @@ public class SampleSitesIT {
 		@Override
 		protected AgentXHTMLDocument parseDocument(Reader re) throws DocumentException, IOException {
 			InputSource source = new InputSource(re);
-			HtmlDocumentBuilder builder = new HtmlDocumentBuilder(getXHTMLDocumentFactory());
-			builder.setIgnoringComments(false);
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
+			parser.setReportingDoctype(true);
+			parser.setCommentPolicy(XmlViolationPolicy.ALLOW);
+			parser.setXmlnsPolicy(XmlViolationPolicy.ALLOW);
+			XMLDocumentBuilder builder = new XMLDocumentBuilder(getXHTMLDocumentFactory());
+			builder.setHTMLProcessing(true);
+			builder.setXMLReader(parser);
 			try {
 				return (AgentXHTMLDocument) builder.parse(source);
 			} catch (SAXException e) {
