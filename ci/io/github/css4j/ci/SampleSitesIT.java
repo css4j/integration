@@ -37,6 +37,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -910,23 +911,52 @@ public class SampleSitesIT {
 			// In DOM4J, Attr.getName() is broken
 			String localName = attr.getLocalName();
 			String prefix = attr.getPrefix();
+			if (prefix == null) {
+				prefix = "";
+			}
 			int len = otherAttrs.getLength();
 			for (int i = 0; i < len; i++) {
 				otherAttr = otherAttrs.item(i);
-				if (localName.equalsIgnoreCase(otherAttr.getLocalName())
-						&& Objects.equals(prefix, otherAttr.getPrefix())) {
-					if (attr.getValue().trim().equals(otherAttr.getNodeValue().trim())) {
-						return 0;
+				if (localName.equalsIgnoreCase(otherAttr.getLocalName())) {
+					String otherPrefix = otherAttr.getPrefix();
+					if (otherPrefix == null) {
+						otherPrefix = "";
 					}
-					return 1;
+					if (prefix.equals(otherPrefix)) {
+						if (compareAttributeValue(name, attr, otherAttr)) {
+							return 0;
+						}
+						return 1;
+					}
 				}
 			}
 			return 2;
 		} else {
-			if (attr.getValue().trim().equals(otherAttr.getNodeValue().trim())) {
+			if (compareAttributeValue(name, attr, otherAttr)) {
 				return 0;
 			}
 			return 1;
+		}
+	}
+
+	private boolean compareAttributeValue(String name, Attr attr, Node otherAttr) {
+		if (!"class".equalsIgnoreCase(name)) {
+			return attr.getValue().trim().equals(otherAttr.getNodeValue().trim());
+		} else {
+			String value = attr.getValue();
+			String oValue = otherAttr.getNodeValue().trim();
+			if (value.equals(oValue)) {
+				return true;
+			}
+			StringBuilder buf = new StringBuilder(oValue.length());
+			StringTokenizer st = new StringTokenizer(oValue, " ");
+			if (st.hasMoreTokens()) {
+				buf.append(st.nextToken());
+			}
+			while (st.hasMoreTokens()) {
+				buf.append(' ').append(st.nextToken());
+			}
+			return value.equals(buf.toString());
 		}
 	}
 
