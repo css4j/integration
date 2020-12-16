@@ -37,7 +37,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -943,20 +942,7 @@ public class SampleSitesIT {
 		if (!"class".equalsIgnoreCase(name)) {
 			return attr.getValue().trim().equals(otherAttr.getNodeValue().trim());
 		} else {
-			String value = attr.getValue();
-			String oValue = otherAttr.getNodeValue().trim();
-			if (value.equals(oValue)) {
-				return true;
-			}
-			StringBuilder buf = new StringBuilder(oValue.length());
-			StringTokenizer st = new StringTokenizer(oValue, " ");
-			if (st.hasMoreTokens()) {
-				buf.append(st.nextToken());
-			}
-			while (st.hasMoreTokens()) {
-				buf.append(' ').append(st.nextToken());
-			}
-			return value.equals(buf.toString());
+			return true;
 		}
 	}
 
