@@ -81,6 +81,7 @@ import io.sf.carte.doc.style.css.CSSMediaException;
 import io.sf.carte.doc.style.css.CSSRule;
 import io.sf.carte.doc.style.css.CSSRuleList;
 import io.sf.carte.doc.style.css.CSSStyleSheetList;
+import io.sf.carte.doc.style.css.DocumentCSSStyleSheet;
 import io.sf.carte.doc.style.css.ErrorHandler;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
 import io.sf.carte.doc.style.css.nsac.Parser;
@@ -316,8 +317,8 @@ public class SampleSitesIT {
 		// Compare to DOM4J computed styles
 		HTMLElement html = document.getDocumentElement();
 		CSSElement dom4jHtml = dom4jdoc.getDocumentElement();
-		// Attr.getName() is broken in DOM4J, cannot compare attributes.
-		checkTree(html, dom4jHtml, dom4jdoc, "DOM4J", false, false);
+		//
+		checkTree(html, dom4jHtml, dom4jdoc, "DOM4J", false, true);
 		/*
 		 * Now compare native DOM to DOM Wrapper computed styles
 		 */
@@ -475,23 +476,33 @@ public class SampleSitesIT {
 			// Rules
 			CSSRuleArrayList rules = csssheet.getCssRules();
 			CSSRuleList<? extends CSSRule> orules = othercsssheet.getCssRules();
-			int n = rules.getLength();
-			if (n != orules.getLength()) {
-				reporter.sideComparison(
-						"Different number of rules in sheet " + i + ", " + n + " vs " + orules.getLength());
-				ret = false;
-			}
+			ret = compareRuleLists(i, rules, orules, ret);
 			if (!ret) {
 				break;
 			}
-			for (int j = 0; j < n; j++) {
-				AbstractCSSRule rule = rules.item(j);
-				AbstractCSSRule orule = (AbstractCSSRule) orules.item(j);
-				if (!rule.equals(orule)) {
-					reporter.sideComparison("Different rules in sheet " + i + ", rule " + j + ": " + rule.getCssText()
-							+ " vs " + orule.getCssText());
-					ret = false;
-				}
+		}
+		// Compare merged style sheet
+		DocumentCSSStyleSheet merged = document.getStyleSheet();
+		DocumentCSSStyleSheet otherMerged = otherDoc.getStyleSheet();
+		ret = compareRuleLists(-1, merged.getCssRules(), otherMerged.getCssRules(), ret);
+		return ret;
+	}
+
+	private boolean compareRuleLists(int sheetIndex, CSSRuleList<AbstractCSSRule> rules,
+			CSSRuleList<? extends CSSRule> orules, boolean ret) {
+		int n = rules.getLength();
+		if (n != orules.getLength()) {
+			reporter.sideComparison(
+					"Different number of rules in sheet " + sheetIndex + ", " + n + " vs " + orules.getLength());
+			return false;
+		}
+		for (int j = 0; j < n; j++) {
+			AbstractCSSRule rule = rules.item(j);
+			AbstractCSSRule orule = (AbstractCSSRule) orules.item(j);
+			if (!rule.equals(orule)) {
+				reporter.sideComparison("Different rules in sheet " + sheetIndex + ", rule " + j + ": "
+						+ rule.getCssText() + " vs " + orule.getCssText());
+				ret = false;
 			}
 		}
 		return ret;
@@ -897,9 +908,14 @@ public class SampleSitesIT {
 		String name = attr.getName();
 		Node otherAttr = otherAttrs.getNamedItem(name);
 		if (otherAttr == null) {
-			for (int i = 0; i < otherAttrs.getLength(); i++) {
+			// In DOM4J, Attr.getName() is broken
+			String localName = attr.getLocalName();
+			String prefix = attr.getPrefix();
+			int len = otherAttrs.getLength();
+			for (int i = 0; i < len; i++) {
 				otherAttr = otherAttrs.item(i);
-				if (name.equalsIgnoreCase(otherAttr.getNodeName())) {
+				if (localName.equalsIgnoreCase(otherAttr.getLocalName())
+						&& Objects.equals(prefix, otherAttr.getPrefix())) {
 					if (attr.getValue().trim().equals(otherAttr.getNodeValue().trim())) {
 						return 0;
 					}
