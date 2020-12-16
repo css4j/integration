@@ -29,10 +29,11 @@ import org.dom4j.dom.DOMElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
-import org.w3c.dom.css.CSSStyleSheet;
 import org.w3c.dom.stylesheets.StyleSheet;
 
 import io.sf.carte.doc.style.css.CSSElement;
+import io.sf.carte.doc.style.css.CSSRule;
+import io.sf.carte.doc.style.css.CSSStyleSheet;
 
 /**
  * This reporter stores information in the same tree as the file cache.
@@ -113,8 +114,8 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 	}
 
 	@Override
-	public void minifiedMissingProperty(CSSStyleSheet parent, int ruleIndex, String cssText, String miniCssText,
-			String property, String propertyValue) {
+	public void minifiedMissingProperty(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String cssText,
+			String miniCssText, String property, String propertyValue) {
 		String uri = parent.getHref();
 		String path = getLinkedSheetInternalPath(parent, uri);
 		writeMinificationError("Minification issue in sheet at " + uri + "\npath: " + path);
@@ -122,8 +123,8 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 	}
 
 	@Override
-	public void minifiedExtraProperty(CSSStyleSheet parent, int ruleIndex, String cssText, String miniCssText,
-			String property, String propertyValue) {
+	public void minifiedExtraProperty(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String cssText,
+			String miniCssText, String property, String propertyValue) {
 		String uri = parent.getHref();
 		String path = getLinkedSheetInternalPath(parent, uri);
 		writeMinificationError("Minification issue in sheet at " + uri + "\npath: " + path);
@@ -131,8 +132,8 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 	}
 
 	@Override
-	public void reparsedMissingProperty(CSSStyleSheet parent, int ruleIndex, String cssText, String reparsedCssText,
-			String property, String propertyValue) {
+	public void reparsedMissingProperty(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String cssText,
+			String reparsedCssText, String property, String propertyValue) {
 		String uri = parent.getHref();
 		String path = getLinkedSheetInternalPath(parent, uri);
 		writeSerializationError("Reparse issue in sheet at " + uri + "\npath: " + path);
@@ -140,8 +141,8 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 	}
 
 	@Override
-	public void reparsedExtraProperty(CSSStyleSheet parent, int ruleIndex, String cssText, String reparsedCssText,
-			String property, String propertyValue) {
+	public void reparsedExtraProperty(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String cssText,
+			String reparsedCssText, String property, String propertyValue) {
 		String uri = parent.getHref();
 		String path = getLinkedSheetInternalPath(parent, uri);
 		writeSerializationError("Reparse issue in sheet at " + uri + "\npath: " + path);
@@ -149,8 +150,8 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 	}
 
 	@Override
-	public void reparsedDifferentValues(CSSStyleSheet parent, int ruleIndex, String cssText, String reparsedCssText,
-			String property, String propertyValueText, String reparsedValueText) {
+	public void reparsedDifferentValues(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String cssText,
+			String reparsedCssText, String property, String propertyValueText, String reparsedValueText) {
 		String uri = parent.getHref();
 		String path = getLinkedSheetInternalPath(parent, uri);
 		writeSerializationError("Reparse issue in sheet at " + uri + "\npath: " + path);
@@ -159,7 +160,8 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 	}
 
 	@Override
-	public void ruleReparseIssue(CSSStyleSheet parent, int ruleIndex, String parsedText, String finalText) {
+	public void ruleReparseIssue(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String parsedText,
+			String finalText) {
 		String uri = parent.getHref();
 		String path = getLinkedSheetInternalPath(parent, uri);
 		writeSerializationError("Reparse issue in sheet at " + uri + "\npath: " + path);
@@ -167,7 +169,8 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 	}
 
 	@Override
-	public void ruleReparseError(CSSStyleSheet parent, int ruleIndex, String parsedText, DOMException ex) {
+	public void ruleReparseError(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String parsedText,
+			DOMException ex) {
 		String uri = parent.getHref();
 		String path = getLinkedSheetInternalPath(parent, uri);
 		writeSerializationError("Reparse error in sheet at " + uri + "\npath: " + path);

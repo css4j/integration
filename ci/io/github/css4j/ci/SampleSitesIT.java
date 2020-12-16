@@ -55,7 +55,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.css.CSSStyleSheet;
 import org.w3c.dom.stylesheets.MediaList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -80,8 +79,8 @@ import io.sf.carte.doc.style.css.CSSElement;
 import io.sf.carte.doc.style.css.CSSMediaException;
 import io.sf.carte.doc.style.css.CSSRule;
 import io.sf.carte.doc.style.css.CSSRuleList;
+import io.sf.carte.doc.style.css.CSSStyleSheet;
 import io.sf.carte.doc.style.css.CSSStyleSheetList;
-import io.sf.carte.doc.style.css.DocumentCSSStyleSheet;
 import io.sf.carte.doc.style.css.ErrorHandler;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
 import io.sf.carte.doc.style.css.nsac.Parser;
@@ -410,7 +409,7 @@ public class SampleSitesIT {
 		int othersheetlen = otherSheets.getLength();
 		if (sheetlen != othersheetlen) {
 			int maxlen, minlen;
-			CSSStyleSheetList<?> larger, smaller;
+			CSSStyleSheetList<? extends CSSRule> larger, smaller;
 			boolean leftHasMore;
 			if (sheetlen > othersheetlen) {
 				larger = sheets;
@@ -425,12 +424,12 @@ public class SampleSitesIT {
 				minlen = sheetlen;
 				leftHasMore = false;
 			}
-			List<CSSStyleSheet> missingSheets = new LinkedList<CSSStyleSheet>();
+			List<CSSStyleSheet<? extends CSSRule>> missingSheets = new LinkedList<>();
 			outerloop: for (int i = 0; i < maxlen; i++) {
-				CSSStyleSheet csssheet = larger.item(i);
+				CSSStyleSheet<? extends CSSRule> csssheet = larger.item(i);
 				String href = csssheet.getHref();
 				for (int j = 0; j < minlen; j++) {
-					CSSStyleSheet othercsssheet = smaller.item(j);
+					CSSStyleSheet<? extends CSSRule> othercsssheet = smaller.item(j);
 					if (href.equals(othercsssheet.getHref())) {
 						continue outerloop;
 					}
@@ -482,8 +481,8 @@ public class SampleSitesIT {
 			}
 		}
 		// Compare merged style sheet
-		DocumentCSSStyleSheet merged = document.getStyleSheet();
-		DocumentCSSStyleSheet otherMerged = otherDoc.getStyleSheet();
+		CSSStyleSheet<AbstractCSSRule> merged = document.getStyleSheet();
+		CSSStyleSheet<AbstractCSSRule> otherMerged = otherDoc.getStyleSheet();
 		ret = compareRuleLists(-1, merged.getCssRules(), otherMerged.getCssRules(), ret);
 		return ret;
 	}
@@ -535,11 +534,11 @@ public class SampleSitesIT {
 					reporter.inlineStyleError(null, eoEntry.getKey(), eoEntry.getValue());
 				}
 			}
-			LinkedHashMap<Exception, CSSStyleSheet> linkedSheetErrs = eh.getLinkedSheetErrors();
+			LinkedHashMap<Exception, CSSStyleSheet<? extends CSSRule>> linkedSheetErrs = eh.getLinkedSheetErrors();
 			if (linkedSheetErrs != null) {
-				Iterator<Entry<Exception, CSSStyleSheet>> it = linkedSheetErrs.entrySet().iterator();
+				Iterator<Entry<Exception, CSSStyleSheet<? extends CSSRule>>> it = linkedSheetErrs.entrySet().iterator();
 				while (it.hasNext()) {
-					Entry<Exception, CSSStyleSheet> eoEntry = it.next();
+					Entry<Exception, CSSStyleSheet<? extends CSSRule>> eoEntry = it.next();
 					reporter.linkedSheetError(eoEntry.getKey(), eoEntry.getValue());
 				}
 			}
@@ -658,7 +657,7 @@ public class SampleSitesIT {
 		return result;
 	}
 
-	private boolean reportMinifiedStyleDiff(CSSStyleSheet parent, int ruleIndex, BaseCSSStyleDeclaration style,
+	private boolean reportMinifiedStyleDiff(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, BaseCSSStyleDeclaration style,
 			BaseCSSStyleDeclaration otherstyle, String serializedText) {
 		boolean foundDiff = false;
 		Diff<String> diff = style.diff(otherstyle);
@@ -761,7 +760,7 @@ public class SampleSitesIT {
 		return result;
 	}
 
-	private boolean reportStyleDiff(CSSStyleSheet parent, int ruleIndex, BaseCSSStyleDeclaration style,
+	private boolean reportStyleDiff(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, BaseCSSStyleDeclaration style,
 			BaseCSSStyleDeclaration otherStyle, String parsedText) {
 		Diff<String> diff = style.diff(otherStyle);
 		if (!diff.hasDifferences()) {
@@ -942,7 +941,7 @@ public class SampleSitesIT {
 			String[] left = diff.getLeftSide();
 			String[] right = diff.getRightSide();
 			String[] different = diff.getDifferent();
-			CSSStyleSheetList<?> sheets;
+			CSSStyleSheetList<? extends CSSRule> sheets;
 			if (left != null) {
 				// Report only if non-CSS presentational hints cannot be the reason
 				if (!ignoreNonCssHints || elm.hasPresentationalHints() == otherdocElm.hasPresentationalHints()) {
@@ -952,7 +951,7 @@ public class SampleSitesIT {
 						if (property.charAt(0) != '*' && property.charAt(property.length() - 1) != 0xfffd) {
 							for (int j = 0; j < sheets.getLength(); j++) {
 								String value = style.getPropertyValue(property);
-								CSSStyleSheet sheet = sheets.item(j);
+								CSSStyleSheet<? extends CSSRule> sheet = sheets.item(j);
 								Selector[] sel = ((BaseCSSStyleSheet) sheet).getSelectorsForPropertyValue(property,
 										value);
 								if (sel != null) {
@@ -997,7 +996,7 @@ public class SampleSitesIT {
 				sheets = docToCompare.getStyleSheets();
 				for (int i = 0; i < right.length; i++) {
 					for (int j = 0; j < sheets.getLength(); j++) {
-						CSSStyleSheet sheet = sheets.item(j);
+						CSSStyleSheet<? extends CSSRule> sheet = sheets.item(j);
 						String value = otherStyle.getPropertyValue(right[i]);
 						Selector[] sel = ((BaseCSSStyleSheet) sheet).getSelectorsForPropertyValue(right[i], value);
 						if (sel != null) {
@@ -1042,7 +1041,7 @@ public class SampleSitesIT {
 					String property = different[i];
 					String value = style.getPropertyValue(property);
 					for (int j = 0; j < sheets.getLength(); j++) {
-						CSSStyleSheet sheet = sheets.item(j);
+						CSSStyleSheet<? extends CSSRule> sheet = sheets.item(j);
 						Selector[] sel = ((BaseCSSStyleSheet) sheet).getSelectorsForPropertyValue(property, value);
 						if (sel != null) {
 							LinkedList<Selector> selectorList = new LinkedList<Selector>();
@@ -1053,7 +1052,7 @@ public class SampleSitesIT {
 					}
 					String othervalue = otherStyle.getPropertyValue(property);
 					for (int j = 0; j < otherSheets.getLength(); j++) {
-						CSSStyleSheet sheet = otherSheets.item(j);
+						CSSStyleSheet<? extends CSSRule> sheet = otherSheets.item(j);
 						Selector[] sel = ((BaseCSSStyleSheet) sheet).getSelectorsForPropertyValue(property, othervalue);
 						if (sel != null) {
 							LinkedList<Selector> selectorList = new LinkedList<Selector>();

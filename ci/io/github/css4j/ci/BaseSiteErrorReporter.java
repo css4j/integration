@@ -20,13 +20,13 @@ import java.util.ListIterator;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.css.CSSStyleSheet;
 import org.w3c.dom.stylesheets.StyleSheet;
 
 import io.sf.carte.doc.dom.DOMElement;
 import io.sf.carte.doc.style.css.CSSElement;
 import io.sf.carte.doc.style.css.CSSMediaException;
 import io.sf.carte.doc.style.css.CSSRule;
+import io.sf.carte.doc.style.css.CSSStyleSheet;
 import io.sf.carte.doc.style.css.MediaQueryList;
 import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
@@ -115,12 +115,12 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void leftHasMoreSheets(List<CSSStyleSheet> missingSheets, int smallerCount) {
+	public void leftHasMoreSheets(List<CSSStyleSheet<? extends CSSRule>> missingSheets, int smallerCount) {
 		writeError(leftSide + " has more style sheets, " + (missingSheets.size() + smallerCount) + " instead of "
 				+ smallerCount);
-		Iterator<CSSStyleSheet> it = missingSheets.iterator();
+		Iterator<CSSStyleSheet<? extends CSSRule>> it = missingSheets.iterator();
 		while (it.hasNext()) {
-			CSSStyleSheet sheet = it.next();
+			CSSStyleSheet<? extends CSSRule> sheet = it.next();
 			StringBuilder sb = new StringBuilder(128);
 			sb.append("The sheet is not in ").append(rightSide).append(", href ").append(sheet.getHref());
 			Node owner = sheet.getOwnerNode();
@@ -133,12 +133,12 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void rightHasMoreSheets(List<CSSStyleSheet> missingSheets, int smallerCount) {
+	public void rightHasMoreSheets(List<CSSStyleSheet<? extends CSSRule>> missingSheets, int smallerCount) {
 		writeError(rightSide + " has more style sheets, " + (missingSheets.size() + smallerCount) + " instead of "
 				+ smallerCount);
-		Iterator<CSSStyleSheet> it = missingSheets.iterator();
+		Iterator<CSSStyleSheet<? extends CSSRule>> it = missingSheets.iterator();
 		while (it.hasNext()) {
-			CSSStyleSheet sheet = it.next();
+			CSSStyleSheet<? extends CSSRule> sheet = it.next();
 			StringBuilder sb = new StringBuilder(128);
 			sb.append("The sheet is not in ").append(leftSide).append(", href ").append(sheet.getHref());
 			Node owner = sheet.getOwnerNode();
@@ -161,7 +161,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void linkedSheetError(Exception exception, CSSStyleSheet sheet) {
+	public void linkedSheetError(Exception exception, CSSStyleSheet<? extends CSSRule> sheet) {
 		writeError("Linked sheet error [href=" + sheet.getHref() + "]:", exception);
 	}
 
@@ -208,8 +208,8 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void minifiedMissingProperty(CSSStyleSheet parent, int ruleIndex, String cssText, String miniCssText,
-			String property, String propertyValue) {
+	public void minifiedMissingProperty(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String cssText,
+			String miniCssText, String property, String propertyValue) {
 		writeMinificationError("******** Minification issue:");
 		writeMinificationError("Property " + property + " with value '" + propertyValue
 				+ "' found only in non-minified style rule " + ruleIndex + " in style sheet " + parent.getHref() + ":\n"
@@ -217,8 +217,8 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void minifiedExtraProperty(CSSStyleSheet parent, int ruleIndex, String cssText, String miniCssText,
-			String property, String propertyValue) {
+	public void minifiedExtraProperty(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String cssText,
+			String miniCssText, String property, String propertyValue) {
 		writeMinificationError("******** Minification issue:");
 		writeMinificationError("Property " + property + " with value '" + propertyValue
 				+ "' found only in minified style rule " + ruleIndex + " in style sheet " + parent.getHref() + ":\n"
@@ -226,8 +226,8 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void minifiedDifferentValues(CSSStyleSheet parent, int ruleIndex, String cssText, String miniCssText,
-			String property, String propertyValueText, String miniValueText) {
+	public void minifiedDifferentValues(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String cssText,
+			String miniCssText, String property, String propertyValueText, String miniValueText) {
 		String failinfo = property + " ('" + propertyValueText;
 		failinfo += "' vs minified '" + miniValueText;
 		failinfo += "').\nRule: " + ruleIndex + " in sheet " + parent.getHref() + ":\n" + cssText + "\nMinified: "
@@ -245,24 +245,24 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void reparsedMissingProperty(CSSStyleSheet parent, int ruleIndex, String cssText, String reparsedCssText,
-			String property, String propertyValue) {
+	public void reparsedMissingProperty(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String cssText,
+			String reparsedCssText, String property, String propertyValue) {
 		writeSerializationError("Re-parse check: property " + property + " with value '" + propertyValue
 				+ "' found only in initial style rule " + ruleIndex + " in style sheet " + parent.getHref() + ":\n"
 				+ cssText + "\nRe-parsed: " + reparsedCssText);
 	}
 
 	@Override
-	public void reparsedExtraProperty(CSSStyleSheet parent, int ruleIndex, String cssText, String reparsedCssText,
-			String property, String propertyValue) {
+	public void reparsedExtraProperty(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String cssText,
+			String reparsedCssText, String property, String propertyValue) {
 		writeSerializationError("Re-parse check: property " + property + " with value '" + propertyValue
 				+ "' found only in re-parsed style rule " + ruleIndex + " in style sheet " + parent.getHref() + ":\n"
 				+ cssText + "\nRe-parsed: " + reparsedCssText);
 	}
 
 	@Override
-	public void reparsedDifferentValues(CSSStyleSheet parent, int ruleIndex, String cssText, String reparsedCssText,
-			String property, String propertyValueText, String reparsedValueText) {
+	public void reparsedDifferentValues(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String cssText,
+			String reparsedCssText, String property, String propertyValueText, String reparsedValueText) {
 		String failinfo = property + " ('" + propertyValueText;
 		failinfo += "' vs re-parsed '" + reparsedValueText;
 		failinfo += "').\nRule: " + ruleIndex + " in sheet " + parent.getHref() + ":\n" + cssText + "\nRe-parsed: "
@@ -271,9 +271,10 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void ruleReparseIssue(CSSStyleSheet parent, int ruleIndex, String parsedText, String finalText) {
-		writeSerializationError("Failed to re-parse rule [sheet=" + parent.getHref() + ", rule=" + ruleIndex + "]: " + parsedText
-				+ "\nbecame: " + finalText);
+	public void ruleReparseIssue(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String parsedText,
+			String finalText) {
+		writeSerializationError("Failed to re-parse rule [sheet=" + parent.getHref() + ", rule=" + ruleIndex + "]: "
+				+ parsedText + "\nbecame: " + finalText);
 	}
 
 	@Override
@@ -284,9 +285,10 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void ruleReparseError(CSSStyleSheet parent, int ruleIndex, String parsedText, DOMException ex) {
-		writeSerializationError("Failed to re-parse rule [sheet=" + parent.getHref() + ", rule=" + ruleIndex + "]: " + parsedText,
-				ex);
+	public void ruleReparseError(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String parsedText,
+			DOMException ex) {
+		writeSerializationError(
+				"Failed to re-parse rule [sheet=" + parent.getHref() + ", rule=" + ruleIndex + "]: " + parsedText, ex);
 	}
 
 	@Override
@@ -352,7 +354,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void ruleErrors(CSSStyleSheet sheet, int sheetIndex, StyleDeclarationErrorHandler eh) {
+	public void ruleErrors(CSSStyleSheet<? extends CSSRule> sheet, int sheetIndex, StyleDeclarationErrorHandler eh) {
 		selectErrorTargetSheet(sheet, sheetIndex);
 		if (eh instanceof DefaultStyleDeclarationErrorHandler) {
 			StringBuilder buf = new StringBuilder(256);
@@ -365,7 +367,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void ruleWarnings(CSSStyleSheet sheet, int sheetIndex, StyleDeclarationErrorHandler eh) {
+	public void ruleWarnings(CSSStyleSheet<? extends CSSRule> sheet, int sheetIndex, StyleDeclarationErrorHandler eh) {
 		if (eh instanceof DefaultStyleDeclarationErrorHandler) {
 			selectWarningTargetSheet(sheet, sheetIndex);
 			StringBuilder buf = new StringBuilder(200);
@@ -378,7 +380,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void omIssues(CSSStyleSheet sheet, int sheetIndex, SheetErrorHandler errHandler) {
+	public void omIssues(CSSStyleSheet<? extends CSSRule> sheet, int sheetIndex, SheetErrorHandler errHandler) {
 		if (errHandler instanceof DefaultSheetErrorHandler) {
 			DefaultSheetErrorHandler dseh = (DefaultSheetErrorHandler) errHandler;
 			LinkedList<String> badAt = dseh.getBadAtRules();
@@ -441,7 +443,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void sacIssues(CSSStyleSheet sheet, int sheetIndex, SACErrorHandler errHandler) {
+	public void sacIssues(CSSStyleSheet<? extends CSSRule> sheet, int sheetIndex, SACErrorHandler errHandler) {
 		if (errHandler instanceof DefaultSheetErrorHandler) {
 			DefaultSheetErrorHandler dseh = (DefaultSheetErrorHandler) errHandler;
 			List<CSSParseException> sacErrors = dseh.getSacErrors();
@@ -451,8 +453,8 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 				for (int i = 0; i < sacErrors.size(); i++) {
 					CSSParseException ex = sacErrors.get(i);
 					CSSRule rule = dseh.getRuleAtError(i);
-					buf.append("SAC error at [").append(ex.getLineNumber()).append(':').append(ex.getColumnNumber()).append("] ")
-							.append(ex.getMessage());
+					buf.append("SAC error at [").append(ex.getLineNumber()).append(':').append(ex.getColumnNumber())
+							.append("] ").append(ex.getMessage());
 					if (rule != null) {
 						buf.append(" --> ").append(rule.getCssText());
 					}

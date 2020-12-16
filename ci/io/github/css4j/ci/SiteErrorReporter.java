@@ -18,12 +18,13 @@ import java.util.List;
 
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
-import org.w3c.dom.css.CSSStyleSheet;
 import org.w3c.dom.stylesheets.StyleSheet;
 
 import io.sf.carte.doc.dom.DOMElement;
 import io.sf.carte.doc.style.css.CSSElement;
 import io.sf.carte.doc.style.css.CSSMediaException;
+import io.sf.carte.doc.style.css.CSSRule;
+import io.sf.carte.doc.style.css.CSSStyleSheet;
 import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.SheetErrorHandler;
 import io.sf.carte.doc.style.css.StyleDeclarationErrorHandler;
@@ -41,15 +42,15 @@ public interface SiteErrorReporter {
 
 	void sideComparison(String message);
 
-	void leftHasMoreSheets(List<CSSStyleSheet> missingSheets, int smallerCount);
+	void leftHasMoreSheets(List<CSSStyleSheet<? extends CSSRule>> missingSheets, int smallerCount);
 
-	void rightHasMoreSheets(List<CSSStyleSheet> missingSheets, int smallerCount);
+	void rightHasMoreSheets(List<CSSStyleSheet<? extends CSSRule>> missingSheets, int smallerCount);
 
 	void mediaQueryError(Node ownerNode, CSSMediaException exception);
 
 	void linkedStyleError(Node ownerNode, String message);
 
-	void linkedSheetError(Exception exception, CSSStyleSheet sheet);
+	void linkedSheetError(Exception exception, CSSStyleSheet<? extends CSSRule> sheet);
 
 	void inlineStyleError(CSSElement owner, Exception exception, String style);
 
@@ -59,30 +60,30 @@ public interface SiteErrorReporter {
 
 	void presentationalHintError(DOMElement element, DOMException ex);
 
-	void minifiedMissingProperty(CSSStyleSheet parent, int ruleIndex, String cssText, String miniCssText,
-			String property, String propertyValue);
+	void minifiedMissingProperty(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String cssText,
+			String miniCssText, String property, String propertyValue);
 
-	void minifiedExtraProperty(CSSStyleSheet parent, int ruleIndex, String cssText, String miniCssText, String property,
-			String propertyValue);
+	void minifiedExtraProperty(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String cssText,
+			String miniCssText, String property, String propertyValue);
 
-	void minifiedDifferentValues(CSSStyleSheet parent, int ruleIndex, String cssText, String miniCssText,
-			String property, String propertyValueText, String miniValueText);
+	void minifiedDifferentValues(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String cssText,
+			String miniCssText, String property, String propertyValueText, String miniValueText);
 
 	void minifiedParseErrors(String cssText, String miniCssText,
 			StyleDeclarationErrorHandler styleDeclarationErrorHandler);
 
-	void reparsedMissingProperty(CSSStyleSheet parent, int ruleIndex, String initialCssText, String reparsedCssText,
-			String property, String propertyValue);
+	void reparsedMissingProperty(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String initialCssText,
+			String reparsedCssText, String property, String propertyValue);
 
-	void reparsedExtraProperty(CSSStyleSheet parent, int ruleIndex, String initialCssText, String reparsedCssText,
-			String property, String propertyValue);
+	void reparsedExtraProperty(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String initialCssText,
+			String reparsedCssText, String property, String propertyValue);
 
-	void reparsedDifferentValues(CSSStyleSheet parent, int ruleIndex, String initialCssText, String reparsedCssText,
-			String property, String propertyValueText, String reparsedValueText);
+	void reparsedDifferentValues(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String initialCssText,
+			String reparsedCssText, String property, String propertyValueText, String reparsedValueText);
 
-	void ruleReparseIssue(CSSStyleSheet parent, int ruleIndex, String parsedText, String finalText);
+	void ruleReparseIssue(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String parsedText, String finalText);
 
-	void ruleReparseError(CSSStyleSheet parent, int ruleIndex, String parsedText, DOMException ex);
+	void ruleReparseError(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String parsedText, DOMException ex);
 
 	void ruleReparseErrors(String parsedText, String finalText,
 			StyleDeclarationErrorHandler styleDeclarationErrorHandler);
@@ -102,13 +103,13 @@ public interface SiteErrorReporter {
 
 	void differentComputedValues(DOMElement elm, String property, String valueText, String rightValueText);
 
-	void ruleErrors(CSSStyleSheet sheet, int sheetIndex, StyleDeclarationErrorHandler eh);
+	void ruleErrors(CSSStyleSheet<? extends CSSRule> sheet, int sheetIndex, StyleDeclarationErrorHandler eh);
 
-	void ruleWarnings(CSSStyleSheet sheet, int sheetIndex, StyleDeclarationErrorHandler eh);
+	void ruleWarnings(CSSStyleSheet<? extends CSSRule> sheet, int sheetIndex, StyleDeclarationErrorHandler eh);
 
-	void omIssues(CSSStyleSheet sheet, int sheetIndex, SheetErrorHandler errHandler);
+	void omIssues(CSSStyleSheet<? extends CSSRule> sheet, int sheetIndex, SheetErrorHandler errHandler);
 
-	void sacIssues(CSSStyleSheet sheet, int sheetIndex, SACErrorHandler errHandler);
+	void sacIssues(CSSStyleSheet<? extends CSSRule> sheet, int sheetIndex, SACErrorHandler errHandler);
 
 	void fail(String message);
 

@@ -20,10 +20,11 @@ import org.dom4j.dom.DOMElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
-import org.w3c.dom.css.CSSStyleSheet;
 import org.w3c.dom.stylesheets.StyleSheet;
 
 import io.sf.carte.doc.style.css.CSSElement;
+import io.sf.carte.doc.style.css.CSSRule;
+import io.sf.carte.doc.style.css.CSSStyleSheet;
 import io.sf.carte.doc.style.css.SACErrorHandler;
 import io.sf.carte.doc.style.css.nsac.CSSParseException;
 import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler;
@@ -104,7 +105,7 @@ public class LogSiteErrorReporter extends BaseSiteErrorReporter {
 	}
 
 	@Override
-	public void sacIssues(CSSStyleSheet sheet, int sheetIndex, SACErrorHandler errHandler) {
+	public void sacIssues(CSSStyleSheet<? extends CSSRule> sheet, int sheetIndex, SACErrorHandler errHandler) {
 		selectTargetSheet(sheet, sheetIndex, !errHandler.hasSacErrors());
 		writeError(errHandler.toString());
 		if (errHandler instanceof DefaultSheetErrorHandler) {
@@ -119,8 +120,7 @@ public class LogSiteErrorReporter extends BaseSiteErrorReporter {
 			ListIterator<CSSParseException> it = sacErrors.listIterator();
 			while (it.hasNext()) {
 				CSSParseException ex = it.next();
-				log.error(
-						"SAC error at [" + ex.getLineNumber() + "," + ex.getColumnNumber() + "]: " + ex.getMessage());
+				log.error("SAC error at [" + ex.getLineNumber() + "," + ex.getColumnNumber() + "]: " + ex.getMessage());
 			}
 		}
 	}
