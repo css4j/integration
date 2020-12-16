@@ -317,7 +317,7 @@ public class SampleSitesIT {
 		HTMLElement html = document.getDocumentElement();
 		CSSElement dom4jHtml = dom4jdoc.getDocumentElement();
 		//
-		checkTree(html, dom4jHtml, dom4jdoc, "DOM4J", false, true);
+		int count = checkTree(html, dom4jHtml, dom4jdoc, "DOM4J", false, true);
 		/*
 		 * Now compare native DOM to DOM Wrapper computed styles
 		 */
@@ -326,6 +326,7 @@ public class SampleSitesIT {
 		WrapperFactory factory = new WrapperFactory();
 		factory.getUserAgent().setOriginPolicy(DefaultOriginPolicy.getInstance());
 		factory.setDefaultHTMLUserAgentSheet();
+		// If DOM wrapper comparison fails, do not stop
 		CSSDocument wrappedHtml = factory.createCSSDocument(document);
 		reporter.setSideDescriptions("Native implementation", "DOM wrapper");
 		try {
@@ -333,10 +334,12 @@ public class SampleSitesIT {
 		} catch (DOMException e) {
 			reporter.fail("Failed preparation of style sheets", e);
 		}
+		String failMessage = null;
 		if (!compResult) {
-			reporter.fail("Different style sheets in backend: DOM wrapper");
+			failMessage = "Different style sheets in backend: DOM wrapper";
+		} else {
+			checkTree(html, wrappedHtml.getDocumentElement(), wrappedHtml, "DOM wrapper", true, false);
 		}
-		int count = checkTree(html, wrappedHtml.getDocumentElement(), wrappedHtml, "DOM wrapper", true, false);
 		// Check the computed styles
 		try {
 			document.setTargetMedium("screen");
@@ -347,6 +350,13 @@ public class SampleSitesIT {
 				reporter.fail("Error(s) computing styles.");
 			}
 		}
+		// Now it is time to fail on deferred reparse issues
+		if (reparseResult == CSSRule.STYLE_RULE) {
+			reporter.fail("Issues with style rules were detected. Check the logs for details.");
+		} else if (reparseResult != -1) {
+			reporter.fail("Serialization issues were detected (at least for rule type " + reparseResult
+					+ "). Check the logs for details.");
+		}
 		// Report style issues
 		if (document.hasStyleIssues()) {
 			StyleSheetList list = document.getStyleSheets();
@@ -354,12 +364,11 @@ public class SampleSitesIT {
 				reporter.fail("Sheet parsing had errors");
 			}
 		}
-		if (reparseResult == CSSRule.STYLE_RULE) {
-			reporter.fail("Issues with style rules were detected. Check the logs for details.");
-		} else if (reparseResult != -1) {
-			reporter.fail("Serialization issues were detected (at least for rule type " + reparseResult
-					+ "). Check the logs for details.");
+		// DOM wrapper issues?
+		if (!compResult) {
+			reporter.fail(failMessage);
 		}
+		//
 		reporter.close();
 	}
 
