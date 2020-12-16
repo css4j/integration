@@ -439,7 +439,7 @@ public class SampleSitesIT {
 				String href = csssheet.getHref();
 				for (int j = 0; j < minlen; j++) {
 					CSSStyleSheet<? extends CSSRule> othercsssheet = smaller.item(j);
-					if (href.equals(othercsssheet.getHref())) {
+					if (isSameSheet(csssheet, href, othercsssheet)) {
 						continue outerloop;
 					}
 				}
@@ -494,6 +494,27 @@ public class SampleSitesIT {
 		CSSStyleSheet<AbstractCSSRule> otherMerged = otherDoc.getStyleSheet();
 		ret = compareRuleLists(-1, merged.getCssRules(), otherMerged.getCssRules(), ret);
 		return ret;
+	}
+
+	private boolean isSameSheet(CSSStyleSheet<? extends CSSRule> csssheet, String href,
+			CSSStyleSheet<? extends CSSRule> othercsssheet) {
+		if (!href.equals(document.getDocumentURI())) {
+			return href.equals(othercsssheet.getHref());
+		}
+		CSSRuleList<? extends CSSRule> rules = csssheet.getCssRules();
+		CSSRuleList<? extends CSSRule> oRules = othercsssheet.getCssRules();
+		int n = rules.getLength();
+		if (n != oRules.getLength()) {
+			return false;
+		}
+		for (int i = 0; i < n; i++) {
+			CSSRule rule = rules.item(i);
+			CSSRule orule = oRules.item(i);
+			if (!rule.equals(orule)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private boolean compareRuleLists(int sheetIndex, CSSRuleList<AbstractCSSRule> rules,
