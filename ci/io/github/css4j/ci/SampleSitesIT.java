@@ -70,6 +70,7 @@ import io.sf.carte.doc.dom.CSSDOMImplementation;
 import io.sf.carte.doc.dom.DOMElement;
 import io.sf.carte.doc.dom.HTMLDocument;
 import io.sf.carte.doc.dom.HTMLElement;
+import io.sf.carte.doc.dom.XMLDocumentBuilder;
 import io.sf.carte.doc.dom4j.DOM4JUserAgent;
 import io.sf.carte.doc.dom4j.DOM4JUserAgent.AgentXHTMLDocumentFactory.AgentXHTMLDocument;
 import io.sf.carte.doc.style.css.CSSComputedProperties;
@@ -108,7 +109,8 @@ import io.sf.carte.doc.style.css.property.StyleValue;
 import io.sf.carte.doc.xml.dtd.DefaultEntityResolver;
 import io.sf.carte.net.NetCache;
 import io.sf.carte.util.Diff;
-import nu.validator.htmlparser.dom.HtmlDocumentBuilder;
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
 
 /**
  * 
@@ -1256,8 +1258,13 @@ public class SampleSitesIT {
 		@Override
 		protected AgentXHTMLDocument parseDocument(Reader re) throws DocumentException, IOException {
 			InputSource source = new InputSource(re);
-			HtmlDocumentBuilder builder = new HtmlDocumentBuilder(getXHTMLDocumentFactory());
-			builder.setIgnoringComments(false);
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
+			parser.setReportingDoctype(true);
+			parser.setCommentPolicy(XmlViolationPolicy.ALLOW);
+			parser.setXmlnsPolicy(XmlViolationPolicy.ALLOW);
+			XMLDocumentBuilder builder = new XMLDocumentBuilder(getXHTMLDocumentFactory());
+			builder.setHTMLProcessing(true);
+			builder.setXMLReader(parser);
 			try {
 				return (AgentXHTMLDocument) builder.parse(source);
 			} catch (SAXException e) {
