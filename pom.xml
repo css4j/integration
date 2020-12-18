@@ -95,6 +95,7 @@
   </dependencies>
   <!-- Build Settings -->
   <build>
+	<defaultGoal>clean package</defaultGoal>
     <directory>${project.basedir}/build</directory>
     <outputDirectory>${project.build.directory}/bin</outputDirectory>
     <finalName>${project.artifactId}-${project.version}</finalName>
