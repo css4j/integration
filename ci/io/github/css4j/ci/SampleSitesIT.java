@@ -412,7 +412,7 @@ public class SampleSitesIT {
 		int othersheetlen = otherSheets.getLength();
 		if (sheetlen != othersheetlen) {
 			int maxlen, minlen;
-			CSSStyleSheetList<?> larger, smaller;
+			CSSStyleSheetList<? extends ExtendedCSSRule> larger, smaller;
 			boolean leftHasMore;
 			if (sheetlen > othersheetlen) {
 				larger = sheets;
@@ -429,11 +429,11 @@ public class SampleSitesIT {
 			}
 			List<CSSStyleSheet> missingSheets = new LinkedList<CSSStyleSheet>();
 			outerloop: for (int i = 0; i < maxlen; i++) {
-				CSSStyleSheet csssheet = larger.item(i);
+				ExtendedCSSStyleSheet<? extends ExtendedCSSRule> csssheet = larger.item(i);
 				String href = csssheet.getHref();
 				for (int j = 0; j < minlen; j++) {
-					CSSStyleSheet othercsssheet = smaller.item(j);
-					if (href.equals(othercsssheet.getHref())) {
+					ExtendedCSSStyleSheet<? extends ExtendedCSSRule> othercsssheet = smaller.item(j);
+					if (isSameSheet(csssheet, href, othercsssheet)) {
 						continue outerloop;
 					}
 				}
@@ -478,23 +478,54 @@ public class SampleSitesIT {
 			// Rules
 			CSSRuleArrayList rules = csssheet.getCssRules();
 			ExtendedCSSRuleList<? extends ExtendedCSSRule> orules = othercsssheet.getCssRules();
-			int n = rules.getLength();
-			if (n != orules.getLength()) {
-				reporter.sideComparison(
-						"Different number of rules in sheet " + i + ", " + n + " vs " + orules.getLength());
-				ret = false;
-			}
+			ret = compareRuleLists(i, rules, orules, ret);
 			if (!ret) {
 				break;
 			}
-			for (int j = 0; j < n; j++) {
-				AbstractCSSRule rule = rules.item(j);
-				AbstractCSSRule orule = (AbstractCSSRule) orules.item(j);
-				if (!rule.equals(orule)) {
-					reporter.sideComparison("Different rules in sheet " + i + ", rule " + j + ": " + rule.getCssText()
-							+ " vs " + orule.getCssText());
-					ret = false;
-				}
+		}
+		// Compare merged style sheet
+		ExtendedCSSStyleSheet<AbstractCSSRule> merged = document.getStyleSheet();
+		ExtendedCSSStyleSheet<? extends ExtendedCSSRule> otherMerged = otherDoc.getStyleSheet();
+		ret = compareRuleLists(-1, merged.getCssRules(), otherMerged.getCssRules(), ret);
+		return ret;
+	}
+
+	private boolean isSameSheet(ExtendedCSSStyleSheet<? extends ExtendedCSSRule> csssheet, String href,
+			ExtendedCSSStyleSheet<? extends ExtendedCSSRule> othercsssheet) {
+		if (!href.equals(document.getDocumentURI())) {
+			return href.equals(othercsssheet.getHref());
+		}
+		ExtendedCSSRuleList<? extends ExtendedCSSRule> rules = csssheet.getCssRules();
+		ExtendedCSSRuleList<? extends ExtendedCSSRule> oRules = othercsssheet.getCssRules();
+		int n = rules.getLength();
+		if (n != oRules.getLength()) {
+			return false;
+		}
+		for (int i = 0; i < n; i++) {
+			ExtendedCSSRule rule = rules.item(i);
+			ExtendedCSSRule orule = oRules.item(i);
+			if (!rule.equals(orule)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean compareRuleLists(int sheetIndex, ExtendedCSSRuleList<? extends ExtendedCSSRule> rules,
+			ExtendedCSSRuleList<? extends ExtendedCSSRule> orules, boolean ret) {
+		int n = rules.getLength();
+		if (n != orules.getLength()) {
+			reporter.sideComparison(
+					"Different number of rules in sheet " + sheetIndex + ", " + n + " vs " + orules.getLength());
+			return false;
+		}
+		for (int j = 0; j < n; j++) {
+			ExtendedCSSRule rule = rules.item(j);
+			AbstractCSSRule orule = (AbstractCSSRule) orules.item(j);
+			if (!rule.equals(orule)) {
+				reporter.sideComparison("Different rules in sheet " + sheetIndex + ", rule " + j + ": "
+						+ rule.getCssText() + " vs " + orule.getCssText());
+				ret = false;
 			}
 		}
 		return ret;
@@ -546,7 +577,7 @@ public class SampleSitesIT {
 					}
 				}
 			}
-			HashMap<String, IOException> ruleio = eh.getRuleIOErrors();
+			HashMap<String, IOException> ruleio = eh.getIOErrors();
 			if (ruleio != null) {
 				Iterator<Entry<String, IOException>> it = ruleio.entrySet().iterator();
 				while (it.hasNext()) {
@@ -1225,8 +1256,6 @@ public class SampleSitesIT {
 	}
 
 	class WrapperFactory extends DOMCSSStyleSheetFactory {
-
-		private static final long serialVersionUID = 1L;
 
 		WrapperFactory() {
 			super(parserFlags);
