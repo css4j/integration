@@ -302,14 +302,14 @@ public class SampleSitesIT {
 		 * First, make a native-to-dom4j sheet comparison
 		 */
 		reporter.setSideDescriptions("Native implementation", "DOM4J backend");
-		boolean compResult = false;
+		boolean result = false;
 		try {
-			compResult = compareSheets(dom4jdoc);
+			result = compareSheets(dom4jdoc);
 		} catch (DOMException e) {
 			reporter.fail("Failed preparation of style sheets", e);
 		}
-		if (!compResult) {
-			reporter.fail("Different style sheets in backend: DOM4J");
+		if (!result) {
+			reporter.fail("Different style sheets in backend: DOM4J.");
 		}
 		// Check rules (re-parse cssText serialization, including optimized serialization)
 		short reparseResult = checkRuleSerialization();
@@ -330,13 +330,13 @@ public class SampleSitesIT {
 		CSSDocument wrappedHtml = factory.createCSSDocument(document);
 		reporter.setSideDescriptions("Native implementation", "DOM wrapper");
 		try {
-			compResult = compareSheets(wrappedHtml);
+			result = compareSheets(wrappedHtml);
 		} catch (DOMException e) {
-			reporter.fail("Failed preparation of style sheets", e);
+			reporter.fail("Failed preparation of style sheets.", e);
 		}
 		String failMessage = null;
-		if (!compResult) {
-			failMessage = "Different style sheets in backend: DOM wrapper";
+		if (!result) {
+			failMessage = "Different style sheets in backend: DOM wrapper.";
 		} else {
 			checkTree(html, wrappedHtml.getDocumentElement(), wrappedHtml, "DOM wrapper", true, false);
 		}
@@ -350,6 +350,14 @@ public class SampleSitesIT {
 				reporter.fail("Error(s) computing styles.");
 			}
 		}
+		// Report style issues
+		if (document.hasStyleIssues()) {
+			StyleSheetList list = document.getStyleSheets();
+			if (findSheetErrors(list) || checkDocumentHandler(document) || failOnWarning) {
+				failMessage = "Sheet parsing had errors.";
+				result = false;
+			}
+		}
 		// Now it is time to fail on deferred reparse issues
 		if (reparseResult == CSSRule.STYLE_RULE) {
 			reporter.fail("Issues with style rules were detected. Check the logs for details.");
@@ -357,15 +365,8 @@ public class SampleSitesIT {
 			reporter.fail("Serialization issues were detected (at least for rule type " + reparseResult
 					+ "). Check the logs for details.");
 		}
-		// Report style issues
-		if (document.hasStyleIssues()) {
-			StyleSheetList list = document.getStyleSheets();
-			if (findSheetErrors(list) || checkDocumentHandler(document) || failOnWarning) {
-				reporter.fail("Sheet parsing had errors");
-			}
-		}
 		// DOM wrapper issues?
-		if (!compResult) {
+		if (!result) {
 			reporter.fail(failMessage);
 		}
 		//
