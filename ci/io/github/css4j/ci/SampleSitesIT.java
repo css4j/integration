@@ -306,21 +306,22 @@ public class SampleSitesIT {
 		 * First, make a native-to-dom4j sheet comparison
 		 */
 		reporter.setSideDescriptions("Native implementation", "DOM4J backend");
-		boolean compResult = false;
+		boolean result = false;
 		try {
-			compResult = compareSheets(dom4jdoc);
+			result = compareSheets(dom4jdoc);
 		} catch (DOMException e) {
 			reporter.fail("Failed preparation of style sheets", e);
 		}
-		if (!compResult) {
-			reporter.fail("Different style sheets in backend: DOM4J");
+		if (!result) {
+			reporter.fail("Different style sheets in backend: DOM4J.");
 		}
 		// Check rules (re-parse cssText serialization, including optimized serialization)
 		short reparseResult = checkRuleSerialization();
 		// Compare to DOM4J computed styles
 		HTMLElement html = document.getDocumentElement();
 		CSSElement dom4jHtml = dom4jdoc.getDocumentElement();
-		checkTree(html, dom4jHtml, dom4jdoc, "DOM4J", false);
+		//
+		int count = checkTree(html, dom4jHtml, dom4jdoc, "DOM4J", false);
 		/*
 		 * Now compare native DOM to DOM Wrapper computed styles
 		 */
@@ -329,17 +330,20 @@ public class SampleSitesIT {
 		WrapperFactory factory = new WrapperFactory();
 		factory.getUserAgent().setOriginPolicy(DefaultOriginPolicy.getInstance());
 		factory.setDefaultHTMLUserAgentSheet();
+		// If DOM wrapper comparison fails, do not stop
 		CSSDocument wrappedHtml = factory.createCSSDocument(document);
 		reporter.setSideDescriptions("Native implementation", "DOM wrapper");
 		try {
-			compResult = compareSheets(wrappedHtml);
+			result = compareSheets(wrappedHtml);
 		} catch (DOMException e) {
-			reporter.fail("Failed preparation of style sheets", e);
+			reporter.fail("Failed preparation of style sheets.", e);
 		}
-		if (!compResult) {
-			reporter.fail("Different style sheets in backend: DOM wrapper");
+		String failMessage = null;
+		if (!result) {
+			failMessage = "Different style sheets in backend: DOM wrapper.";
+		} else {
+			checkTree(html, wrappedHtml.getDocumentElement(), wrappedHtml, "DOM wrapper", true);
 		}
-		int count = checkTree(html, wrappedHtml.getDocumentElement(), wrappedHtml, "DOM wrapper", true);
 		// Check the computed styles
 		try {
 			document.setTargetMedium("screen");
@@ -354,15 +358,22 @@ public class SampleSitesIT {
 		if (document.hasStyleIssues()) {
 			StyleSheetList list = document.getStyleSheets();
 			if (findSheetErrors(list) || checkDocumentHandler(document) || failOnWarning) {
-				reporter.fail("Sheet parsing had errors");
+				failMessage = "Sheet parsing had errors.";
+				result = false;
 			}
 		}
+		// Now it is time to fail on deferred reparse issues
 		if (reparseResult == CSSRule.STYLE_RULE) {
 			reporter.fail("Issues with style rules were detected. Check the logs for details.");
 		} else if (reparseResult != -1) {
 			reporter.fail("Serialization issues were detected (at least for rule type " + reparseResult
 					+ "). Check the logs for details.");
 		}
+		// DOM wrapper issues?
+		if (!result) {
+			reporter.fail(failMessage);
+		}
+		//
 		reporter.close();
 	}
 
