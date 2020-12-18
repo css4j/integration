@@ -66,13 +66,25 @@
 		<scope>compile</scope>
 		<optional>false</optional>
 	</dependency>
-	<!-- https://mvnrepository.com/artifact/nu.validator.htmlparser/htmlparser -->
+	<dependency>
+		<groupId>org.slf4j</groupId>
+		<artifactId>slf4j-simple</artifactId>
+		<version>1.7.30</version>
+		<scope>test</scope>
+	</dependency>
 	<dependency>
 		<groupId>nu.validator</groupId>
 		<artifactId>htmlparser</artifactId>
 		<version>1.4.16</version>
 		<scope>compile</scope>
 		<optional>false</optional>
+	</dependency>
+	<dependency>
+		<groupId>xmlpull</groupId>
+		<artifactId>xmlpull</artifactId>
+		<version>1.2.0</version>
+		<scope>runtime</scope>
+		<optional>true</optional>
 	</dependency>
   </dependencies>
   <!-- Build Settings -->
@@ -87,7 +99,7 @@
 		<plugin>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-source-plugin</artifactId>
-			<version>3.1.0</version>
+			<version>3.2.1</version>
 			<executions>
 				<execution>
 					<id>attach-sources</id>
@@ -126,7 +138,7 @@
 		<plugin>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-jar-plugin</artifactId>
-			<version>3.1.2</version>
+			<version>3.2.0</version>
 			<configuration>
 			<archive>
 				<addMavenDescriptor>false</addMavenDescriptor>
@@ -162,7 +174,7 @@
 		<plugin>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-surefire-plugin</artifactId>
-			<version>3.0.0-M4</version>
+			<version>3.0.0-M5</version>
 			<configuration>
 				<additionalClasspathElements>
 					<additionalClasspathElement>${project.basedir}/ci</additionalClasspathElement>
@@ -172,7 +184,7 @@
 		<plugin>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-failsafe-plugin</artifactId>
-			<version>3.0.0-M4</version>
+			<version>3.0.0-M5</version>
 			<configuration>
 				<forkCount>4</forkCount>
 				<reuseForks>true</reuseForks>
