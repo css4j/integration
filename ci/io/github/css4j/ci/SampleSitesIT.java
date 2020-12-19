@@ -101,6 +101,7 @@ import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler;
 import io.sf.carte.doc.style.css.om.DummyDeviceFactory;
 import io.sf.carte.doc.style.css.om.GroupingRule;
 import io.sf.carte.doc.style.css.om.StylableDocumentWrapper;
+import io.sf.carte.doc.style.css.om.StyleRule;
 import io.sf.carte.doc.style.css.om.StyleSheetList;
 import io.sf.carte.doc.style.css.parser.ParseHelper;
 import io.sf.carte.doc.style.css.property.CSSPropertyValueException;
@@ -631,7 +632,7 @@ public class SampleSitesIT {
 		short result = -1;
 		short ruleType = rule.getType();
 		if (ruleType == CSSRule.STYLE_RULE) {
-			CSSStyleDeclarationRule stylerule = (CSSStyleDeclarationRule) rule;
+			StyleRule stylerule = (StyleRule) rule;
 			if (!checkMinification(stylerule, sheetIndex, ruleIndex)) {
 				result = ruleType;
 			}
@@ -766,13 +767,13 @@ public class SampleSitesIT {
 		return result;
 	}
 
-	private boolean checkSelectors(CSSStyleDeclarationRule stylerule, int sheetIndex, int ruleIndex,
+	private boolean checkSelectors(StyleRule stylerule, int sheetIndex, int ruleIndex,
 			AbstractCSSStyleSheet sheet) {
-		SelectorList selist = CSSOMBridge.getSelectorList(stylerule);
+		SelectorList selist = stylerule.getSelectorList();
 		String cssText = stylerule.getCssText();
-		CSSStyleDeclarationRule orule = sheet.createStyleRule();
+		StyleRule orule = sheet.createStyleRule();
 		orule.setCssText(cssText);
-		SelectorList oselist = CSSOMBridge.getSelectorList(orule);
+		SelectorList oselist = orule.getSelectorList();
 		boolean result = ParseHelper.equalSelectorList(selist, oselist);
 		if (!result) {
 			reporter.ruleSelectorError(stylerule, selist, oselist, orule.getSelectorText(), sheetIndex, ruleIndex,
