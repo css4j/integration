@@ -312,6 +312,15 @@ public class SampleSitesTest {
 	}
 
 	@Test
+	public void testIsNotDifferentFontFamily2() {
+		styleDecl.setCssText("font-family: Times New Roman, Arial");
+		StyleValue value = styleDecl.getPropertyCSSValue("font-family");
+		ValueFactory factory = new ValueFactory();
+		StyleValue other = factory.parseProperty("'Times New Roman',Arial");
+		assertTrue(comparator.isNotDifferent("font-family", value, other));
+	}
+
+	@Test
 	public void testIsNotDifferentUnset() {
 		styleDecl.setCssText("margin-bottom:unset;");
 		StyleValue value = styleDecl.getPropertyCSSValue("margin-bottom");
