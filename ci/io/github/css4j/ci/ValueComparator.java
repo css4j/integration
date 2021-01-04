@@ -72,10 +72,15 @@ class ValueComparator {
 		}
 		if (text.equals(minitext) || isApproximateNumericValue(value, minivalue)) {
 			return true;
-		} else if (value.getCssValueType() == CssType.LIST
-				&& minivalue.getCssValueType() == CssType.LIST) {
-			if (isApproximateNumericValue((ValueList) value, (ValueList) minivalue)) {
+		} else if (value.getCssValueType() == CssType.LIST) {
+			if ("font-family".equals(property) && minivalue.getPrimitiveType() == Type.STRING
+					&& text.equals(((CSSTypedValue) minivalue).getStringValue())) {
 				return true;
+			}
+			if (minivalue.getCssValueType() == CssType.LIST) {
+				if (isApproximateNumericValue((ValueList) value, (ValueList) minivalue)) {
+					return true;
+				}
 			}
 		}
 		if (property.equals("background-position")
