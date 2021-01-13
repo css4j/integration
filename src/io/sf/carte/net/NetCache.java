@@ -181,7 +181,7 @@ public class NetCache {
 				if (cp == 10 || cp == -1) {
 					break;
 				}
-				buf.append(Character.toChars(cp));
+				buf.appendCodePoint(cp);
 			}
 			return buf.toString();
 		}
