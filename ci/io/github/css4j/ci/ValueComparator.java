@@ -183,8 +183,8 @@ class ValueComparator {
 			Type otype = priOther.getPrimitiveType();
 			if (ptype == Type.COLOR) {
 				if (otype == Type.COLOR) {
-					RGBAColor color = pri.toRGBColorValue();
-					RGBAColor otherColor = priOther.toRGBColorValue();
+					RGBAColor color = pri.toRGBColor();
+					RGBAColor otherColor = priOther.toRGBColor();
 					if (similarComponentValues(color.getRed(), otherColor.getRed())
 							&& similarComponentValues(color.getGreen(), otherColor.getGreen())
 							&& similarComponentValues(color.getBlue(), otherColor.getBlue())
