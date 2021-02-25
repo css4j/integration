@@ -56,7 +56,7 @@ class ValueComparator {
 		String text = value.getCssText();
 		if (value.getPrimitiveType() == CSSValue.Type.INITIAL || (value.getPrimitiveType() == CSSValue.Type.UNSET
 				&& !PropertyDatabase.getInstance().isInherited(property))) {
-			StyleValue inivalue = CSSOMBridge.getInitialValue(property, style, PropertyDatabase.getInstance());
+			StyleValue inivalue = CSSOMBridge.getInitialValue(property, style);
 			if (isNotDifferent(property, inivalue, minivalue)) {
 				return true;
 			}
@@ -65,7 +65,7 @@ class ValueComparator {
 		if (minivalue.getPrimitiveType() == CSSValue.Type.INITIAL
 				|| (minivalue.getPrimitiveType() == CSSValue.Type.UNSET
 						&& !PropertyDatabase.getInstance().isInherited(property))) {
-			StyleValue inivalue = CSSOMBridge.getInitialValue(property, style, PropertyDatabase.getInstance());
+			StyleValue inivalue = CSSOMBridge.getInitialValue(property, style);
 			if (isNotDifferent(property, value, inivalue)) {
 				return true;
 			}
