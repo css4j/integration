@@ -251,6 +251,9 @@ public class SampleSitesIT {
 		if (errorReporterType == 0) {
 			reporter = new LogSiteErrorReporter();
 		} else {
+			if (netcache == null) {
+				throw new IOException("Netcache is not available.");
+			}
 			reporter = new TreeSiteErrorReporter();
 		}
 		reporter.startSiteReport(url);
