@@ -6,26 +6,28 @@ The class `SampleSitesIT` (located in the `ci` tree) fetches a list of URLs with
 
 For each URL in the `samplesites.txt` file (that has to be put under the same package `io.github.css4j.ci` in the classpath), it fetches the document and its style sheets, computing styles for each element with the native implementation, the DOM wrapper and the DOM4J backend. It looks for errors in the style sheets and also compares the results of the three backends. If there are errors or differences in the styles computed by the implementations, they are reported (reporting is configurable) and the test fails.
 
-If you try the test with a high-volume website, beware that each site is retrieved twice (one by each backend), and some sites do send slightly different documents in these circumstances, so you should enable the use of the cache (`cachedir` configuration parameter).
+If you try the test with a high-volume website, beware that each site is retrieved twice (one by each backend), and some sites do send slightly different documents in these circumstances, so you should enable the use of the cache (`cache.dir` configuration parameter).
 
-You can put as many websites as you want in `samplesites.txt`, and they can be commented out with the '#' character at the beginning of the line. There is a `samplesites.properties` that can be used for configuration, with options like `fail-on-warning` in addition to the aforementioned `cachedir`:
+You can put as many websites as you want in `samplesites.txt`, and they can be commented out with the '#' character at the beginning of the line. There is a `samplesites.properties` that can be used for configuration, with options like `fail-on-warning` in addition to the aforementioned `cache.dir`:
 ```
 fail-on-warning=<true|false>
-cachedir=<path to site cache>
+cache.dir=<path to site cache>
 parser.<flag>=true
 ```
 - `fail-on-warning`: if set to true, a test shall fail even if only style sheet warnings were logged.
-- `cachedir`: that has to be set to the directory where the cache files can be stored.
+- `cache.dir`: that has to be set to the directory where the cache files can be stored.
+- `cache.refresh`: if set to `true`, refreshes the files in the cache.
+- `dom.strict-error-checking`: set strict error checking at the DOM implementation. Default is `true`.
 - `parser.<flag>`: set a NSAC parser flag to use in the test.
 
 You can use this tool to monitor a list of URLs that are important for you. The tool can be run from an IDE or with the Maven Failsafe plugin (`mvn verify`), provided that the CI environment is set up correctly.
 
-To use it with Failsafe, perhaps you want to set up a classpath directory in the failsafe configuration, to put the configuration files so they can be read (and edited!), like:
+To use it with [Failsafe](https://maven.apache.org/surefire/maven-failsafe-plugin/), perhaps you want to set up a classpath directory in the failsafe configuration, to put the configuration files so they can be read (and edited!), like:
 ```
  <plugin>
    <groupId>org.apache.maven.plugins</groupId>
    <artifactId>maven-failsafe-plugin</artifactId>
-   <version>3.0.0-M4</version>
+   <version>3.0.0-M5</version>
    <configuration>
      <additionalClasspathElements>
        <additionalClasspathElement>/my/path/to/ci</additionalClasspathElement>
