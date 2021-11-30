@@ -25,6 +25,18 @@
 	</dependency>
 	<dependency>
 		<groupId>io.sf.carte</groupId>
+		<artifactId>carte-util</artifactId>
+		<version>3.5.1</version>
+		<type>jar</type>
+	</dependency>
+	<dependency>
+		<groupId>io.sf.carte</groupId>
+		<artifactId>xml-dtd</artifactId>
+		<version>3.5.2</version>
+		<type>jar</type>
+	</dependency>
+	<dependency>
+		<groupId>io.sf.carte</groupId>
 		<artifactId>css4j</artifactId>
 		<version>${css4j.version}</version>
 		<type>jar</type>
@@ -95,6 +107,14 @@
 		<optional>true</optional>
 	</dependency>
   </dependencies>
+  <!-- Configure CSS4J repository -->
+  <repositories>
+	<repository>
+		<id>css4j</id>
+		<name>CSS4J repository</name>
+		<url>https://css4j.github.io/maven/</url>
+	</repository>
+  </repositories>
   <!-- Build Settings -->
   <build>
 	<defaultGoal>clean package</defaultGoal>
