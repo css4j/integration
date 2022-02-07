@@ -243,6 +243,17 @@ public class SampleSitesIT {
 		dom4jAgent = new MyDOM4JUserAgent();
 		log.info("Testing URL: " + uri);
 		URL url = new URL(uri);
+
+		if (errorReporterType == 0) {
+			reporter = new LogSiteErrorReporter();
+		} else {
+			if (netcache == null) {
+				throw new IOException("Netcache is not available.");
+			}
+			reporter = new TreeSiteErrorReporter();
+		}
+		reporter.startSiteReport(url);
+
 		try {
 			document = (HTMLDocument) agent.readURL(url);
 		} catch (DocumentException e) {
@@ -255,15 +266,6 @@ public class SampleSitesIT {
 			reporter.fail("Error parsing to DOM4J", e);
 			e.printStackTrace();
 		}
-		if (errorReporterType == 0) {
-			reporter = new LogSiteErrorReporter();
-		} else {
-			if (netcache == null) {
-				throw new IOException("Netcache is not available.");
-			}
-			reporter = new TreeSiteErrorReporter();
-		}
-		reporter.startSiteReport(url);
 	}
 
 	/**
