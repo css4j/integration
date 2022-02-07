@@ -234,7 +234,7 @@ public class SampleSitesIT {
 
 	SiteErrorReporter reporter;
 
-	public SampleSitesIT(String uri) throws IOException, DocumentException {
+	public SampleSitesIT(String uri) throws IOException {
 		super();
 		agent = new MyDOMUserAgent();
 		if (!strictErrorChecking) {
@@ -243,8 +243,18 @@ public class SampleSitesIT {
 		dom4jAgent = new MyDOM4JUserAgent();
 		log.info("Testing URL: " + uri);
 		URL url = new URL(uri);
-		document = (HTMLDocument) agent.readURL(url);
-		dom4jdoc = dom4jAgent.readURL(url);
+		try {
+			document = (HTMLDocument) agent.readURL(url);
+		} catch (DocumentException e) {
+			reporter.fail("Error parsing native DOM", e);
+			e.printStackTrace();
+		}
+		try {
+			dom4jdoc = dom4jAgent.readURL(url);
+		} catch (DocumentException e) {
+			reporter.fail("Error parsing to DOM4J", e);
+			e.printStackTrace();
+		}
 		if (errorReporterType == 0) {
 			reporter = new LogSiteErrorReporter();
 		} else {

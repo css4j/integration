@@ -58,7 +58,7 @@ public interface SiteErrorReporter {
 
 	void computedStyleError(CSSElement element, String propertyName, CSSPropertyValueException ex);
 
-	void presentationalHintError(DOMElement element, DOMException ex);
+	void presentationalHintError(DOMElement element, Throwable ex);
 
 	void minifiedMissingProperty(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String cssText,
 			String miniCssText, String property, String propertyValue);
@@ -115,7 +115,7 @@ public interface SiteErrorReporter {
 
 	void computedStyleExtraProperties(String message, DOMElement elm, String[] properties, String backendName);
 
-	void fail(String message, DOMException exception);
+	void fail(String message, Throwable exception);
 
 	void close() throws IOException;
 
