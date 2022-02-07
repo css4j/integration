@@ -91,7 +91,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void fail(String message, DOMException ex) {
+	public void fail(String message, Throwable ex) {
 		writeError(message, ex);
 		String exmsg = ex.getMessage();
 		StringBuilder buf = new StringBuilder(message.length() + exmsg.length() + 2);
@@ -188,7 +188,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void presentationalHintError(DOMElement element, DOMException ex) {
+	public void presentationalHintError(DOMElement element, Throwable ex) {
 		writeError("Presentational hint error (" + element.getTagName() + ").", ex);
 	}
 
