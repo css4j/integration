@@ -198,8 +198,8 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 		writeSerializationError("Selector reparse error in rule: " + ruleIndex + " in sheet " + parent.getHref() + ":");
 		writeSerializationError("List 1 (CSSOM): " + stylerule.getSelectorText());
 		writeSerializationError("List 2 (CSSOM): " + selectorText);
-		writeSerializationError("List 1  (NSAC): " + selist.toString());
-		writeSerializationError("List 2  (NSAC): " + otherSelist.toString());
+		writeSerializationError("List 1  (NSAC): " + selist == null ? "null" : selist.toString());
+		writeSerializationError("List 2  (NSAC): " + otherSelist == null ? "null" : otherSelist.toString());
 	}
 
 	@Override
