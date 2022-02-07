@@ -17,7 +17,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
@@ -71,13 +73,23 @@ public class NetCache {
 		File cachedfile = new File(hostdir, encodedUrl);
 		ucon.setConnectTimeout(100000);
 		ucon.setAllowUserInteraction(false);
-		FileOutputStream out = new FileOutputStream(cachedfile);
 		InputStream is = null;
 		long contentLen = 0;
-		try {
+		try (FileOutputStream out = new FileOutputStream(cachedfile)) {
 			Charset charset = StandardCharsets.UTF_8;
 			boolean contentEncodingGzip = false;
 			ucon.connect();
+			// Response code
+			if (ucon instanceof HttpURLConnection) {
+				int code = ((HttpURLConnection) ucon).getResponseCode();
+				String message = ((HttpURLConnection) ucon).getResponseMessage();
+				out.write(Integer.toString(code).trim().getBytes(charset));
+				if (message != null && message.length() > 0) {
+					out.write(32);
+					out.write(message.getBytes(charset));
+				}
+				out.write(10); // LF
+			}
 			Map<String, List<String>> headers = ucon.getHeaderFields();
 			Iterator<Entry<String, List<String>>> it = headers.entrySet().iterator();
 			while(it.hasNext()) {
@@ -113,15 +125,16 @@ public class NetCache {
 				contentLen += numbytes;
 			}
 		} catch (IOException e) {
-			out.close();
 			cachedfile.delete();
 			throw e;
 		} finally {
 			if (is != null) {
-				is.close();
+				try {
+					is.close();
+				} catch (IOException e) {
+				}
 			}
 		}
-		out.close();
 		// Update metadata
 		File metadata = new File(hostdir, METADATA_FILENAME);
 		PrintStream wri = new PrintStream(new FileOutputStream(metadata, true));
@@ -143,12 +156,19 @@ public class NetCache {
 		return new CacheConnection(cachedfile);
 	}
 
-	static class CacheConnection extends URLConnection {
+	static class CacheConnection extends HttpURLConnection {
 
 		private final File cachedfile;
-		private final LinkedHashMap<String, String> headers = new LinkedHashMap<String, String>();
+
+		private final LinkedHashMap<String, String> headers = new LinkedHashMap<String, String>(32);
+
 		long contentLength = -1;
+
 		private FileInputStream inputStream = null;
+
+		private int statusCode = -1;
+
+		private String statusMessage = null;
 
 		protected CacheConnection(File cachedfile) throws MalformedURLException {
 			super(cachedfile.toURI().toURL());
@@ -157,9 +177,24 @@ public class NetCache {
 
 		@Override
 		public void connect() throws IOException {
+			connected = true;
+
 			inputStream = new FileInputStream(cachedfile);
+			String line = readLine();
+			int iws = line.indexOf(' ');
+			if (iws > 1) {
+				statusMessage = line.substring(iws + 1);
+				line = line.substring(0, iws);
+			}
+			try {
+				statusCode = Integer.parseInt(line);
+			} catch (NumberFormatException e) {
+				statusCode = 200;
+			}
+
+			// Headers
 			do {
-				String line = readLine();
+				line = readLine();
 				if (line.length() == 0) {
 					break;
 				}
@@ -167,6 +202,17 @@ public class NetCache {
 				headers.put(line.substring(0, klen).toLowerCase(Locale.ROOT), line.substring(klen + 1));
 			} while(true);
 			contentLength = inputStream.available();
+		}
+
+		@Override
+		public void disconnect() {
+			if (inputStream != null) {
+				try {
+					inputStream.close();
+				} catch (IOException e) {
+				}
+			}
+			connected = false;
 		}
 
 		private String readLine() throws IOException {
@@ -189,6 +235,30 @@ public class NetCache {
 		@Override
 		public long getContentLengthLong() {
 			return contentLength;
+		}
+
+		@Override
+		public void setFixedLengthStreamingMode(int contentLength) {
+			throw new IllegalArgumentException("streaming not supported");
+		}
+
+		@Override
+		public void setFixedLengthStreamingMode(long contentLength) {
+			throw new IllegalArgumentException("streaming not supported");
+		}
+
+		@Override
+		public void setInstanceFollowRedirects(boolean followRedirects) {
+			if (!followRedirects) {
+				throw new IllegalArgumentException("Redirects are always followed");
+			}
+		}
+
+		@Override
+		public void setRequestMethod(String method) throws ProtocolException {
+			if (!"get".equalsIgnoreCase(method) && "post".equalsIgnoreCase(method)) {
+				throw new ProtocolException("Unsupported method: " + method);
+			}
 		}
 
 		@Override
@@ -221,6 +291,22 @@ public class NetCache {
 			}
 			return inputStream;
 		}
+
+		@Override
+		public int getResponseCode() throws IOException {
+			return statusCode;
+		}
+
+		@Override
+		public String getResponseMessage() throws IOException {
+			return statusMessage;
+		}
+
+		@Override
+		public boolean usingProxy() {
+			return false;
+		}
+
 	}
 
 }
