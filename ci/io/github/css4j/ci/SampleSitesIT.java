@@ -257,14 +257,17 @@ public class SampleSitesIT {
 		try {
 			document = (HTMLDocument) agent.readURL(url);
 		} catch (DocumentException e) {
-			reporter.fail("Error parsing native DOM", e);
 			e.printStackTrace();
+			reporter.fail("Error parsing native DOM", e);
+		} catch (IOException e) {
+			e.printStackTrace();
+			reporter.fail("Error retrieving document at " + url.toString(), e);
 		}
 		try {
 			dom4jdoc = dom4jAgent.readURL(url);
 		} catch (DocumentException e) {
-			reporter.fail("Error parsing to DOM4J", e);
 			e.printStackTrace();
+			reporter.fail("Error parsing to DOM4J", e);
 		}
 	}
 
