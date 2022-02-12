@@ -38,8 +38,6 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -106,7 +104,6 @@ import io.sf.carte.doc.style.css.parser.ParseHelper;
 import io.sf.carte.doc.style.css.property.CSSPropertyValueException;
 import io.sf.carte.doc.style.css.property.PropertyDatabase;
 import io.sf.carte.doc.style.css.property.StyleValue;
-import io.sf.carte.doc.xml.dtd.DefaultEntityResolver;
 import io.sf.carte.net.NetCache;
 import io.sf.carte.util.Diff;
 import nu.validator.htmlparser.common.XmlViolationPolicy;
@@ -255,6 +252,9 @@ public class SampleSitesIT {
 		if (errorReporterType == 0) {
 			reporter = new LogSiteErrorReporter();
 		} else {
+			if (netcache == null) {
+				throw new IOException("Netcache is not available.");
+			}
 			reporter = new TreeSiteErrorReporter();
 		}
 		reporter.startSiteReport(url);
@@ -342,8 +342,6 @@ public class SampleSitesIT {
 		/*
 		 * Now compare native DOM to DOM Wrapper computed styles
 		 */
-		DocumentBuilder docbuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		docbuilder.setEntityResolver(new DefaultEntityResolver());
 		WrapperFactory factory = new WrapperFactory();
 		factory.getUserAgent().setOriginPolicy(DefaultOriginPolicy.getInstance());
 		factory.setDefaultHTMLUserAgentSheet();
