@@ -205,7 +205,7 @@
 			<configuration>
 				<forkCount>4</forkCount>
 				<reuseForks>true</reuseForks>
-				<argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
+				<argLine>-Dfile.encoding=${project.build.sourceEncoding} -Xmx2048m</argLine>
 				<additionalClasspathElements>
 					<additionalClasspathElement>${project.basedir}/ci</additionalClasspathElement>
 				</additionalClasspathElements>
