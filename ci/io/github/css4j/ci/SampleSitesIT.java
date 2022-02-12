@@ -251,24 +251,29 @@ public class SampleSitesIT {
 		dom4jAgent = new MyDOM4JUserAgent();
 		log.info("Testing URL: " + uri);
 		URL url = new URL(uri);
-		try {
-			document = (HTMLDocument) agent.readURL(url);
-		} catch (DocumentException e) {
-			reporter.fail("Error parsing native DOM", e);
-			e.printStackTrace();
-		}
-		try {
-			dom4jdoc = dom4jAgent.readURL(url);
-		} catch (DocumentException e) {
-			reporter.fail("Error parsing to DOM4J", e);
-			e.printStackTrace();
-		}
+
 		if (errorReporterType == 0) {
 			reporter = new LogSiteErrorReporter();
 		} else {
 			reporter = new TreeSiteErrorReporter();
 		}
 		reporter.startSiteReport(url);
+
+		try {
+			document = (HTMLDocument) agent.readURL(url);
+		} catch (DocumentException e) {
+			e.printStackTrace();
+			reporter.fail("Error parsing native DOM", e);
+		} catch (IOException e) {
+			e.printStackTrace();
+			reporter.fail("Error retrieving document at " + url.toString(), e);
+		}
+		try {
+			dom4jdoc = dom4jAgent.readURL(url);
+		} catch (DocumentException e) {
+			e.printStackTrace();
+			reporter.fail("Error parsing to DOM4J", e);
+		}
 	}
 
 	/**
