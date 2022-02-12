@@ -95,6 +95,14 @@
 		<optional>true</optional>
 	</dependency>
   </dependencies>
+  <!-- Configure CSS4J repository -->
+  <repositories>
+	<repository>
+		<id>css4j</id>
+		<name>CSS4J repository</name>
+		<url>https://css4j.github.io/maven/</url>
+	</repository>
+  </repositories>
   <!-- Build Settings -->
   <build>
 	<defaultGoal>clean package</defaultGoal>
