@@ -19,26 +19,3 @@ cachedir=<path to site cache>
 - `cachedir`: that has to be set to the directory where the cache files can be stored.
 
 You can use this tool to monitor a list of URLs that are important for you. The tool can be run from an IDE or with the Maven Failsafe plugin (`mvn verify`), provided that the CI environment is set up correctly.
-
-To use it with Failsafe, perhaps you want to set up a classpath directory in the failsafe configuration, to put the configuration files so they can be read (and edited!), like:
-```
- <plugin>
-   <groupId>org.apache.maven.plugins</groupId>
-   <artifactId>maven-failsafe-plugin</artifactId>
-   <version>3.0.0-M4</version>
-   <configuration>
-     <additionalClasspathElements>
-       <additionalClasspathElement>/my/path/to/ci</additionalClasspathElement>
-     </additionalClasspathElements>
-   </configuration>
-   <executions>
-     <execution>
-       <goals>
-         <goal>integration-test</goal>
-         <goal>verify</goal>
-       </goals>
-     </execution>
-   </executions>
- </plugin>
-```
-And then you can run your own integration tests with your chosen sites.
