@@ -26,7 +26,7 @@
 	<dependency>
 		<groupId>io.sf.carte</groupId>
 		<artifactId>carte-util</artifactId>
-		<version>3.5.1</version>
+		<version>3.6.0</version>
 		<type>jar</type>
 	</dependency>
 	<dependency>
