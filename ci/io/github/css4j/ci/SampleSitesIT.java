@@ -682,8 +682,16 @@ public class SampleSitesIT {
 	private boolean checkMinification(CSSStyleDeclarationRule rule, int sheetIndex, int ruleIndex) {
 		boolean result = true;
 		BaseCSSStyleDeclaration style = (BaseCSSStyleDeclaration) rule.getStyle();
-		String mini = CSSOMBridge.getOptimizedCssText(style);
 		CSSStyleDeclarationRule stylerule = rule.getParentStyleSheet().createStyleRule();
+		String mini;
+		try {
+			mini = CSSOMBridge.getOptimizedCssText(style);
+		} catch (Exception e) {
+			reporter.minifiedParseErrors(style.getCssText(), e.getMessage(),
+				stylerule.getStyleDeclarationErrorHandler());
+			e.printStackTrace();
+			return false;
+		}
 		BaseCSSStyleDeclaration ministyle = (BaseCSSStyleDeclaration) stylerule.getStyle();
 		try {
 			ministyle.setCssText(mini);
