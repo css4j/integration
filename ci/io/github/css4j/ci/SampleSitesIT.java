@@ -65,6 +65,7 @@ import io.sf.carte.doc.agent.net.DefaultUserAgent;
 import io.sf.carte.doc.dom.AttributeNamedNodeMap;
 import io.sf.carte.doc.dom.CSSDOMImplementation;
 import io.sf.carte.doc.dom.DOMElement;
+import io.sf.carte.doc.dom.DOMNodeList;
 import io.sf.carte.doc.dom.HTMLDocument;
 import io.sf.carte.doc.dom.HTMLElement;
 import io.sf.carte.doc.dom.XMLDocumentBuilder;
@@ -884,7 +885,7 @@ public class SampleSitesIT {
 
 	private int checkTree(DOMElement elm, CSSElement otherdocElm, CSSDocument docToCompare, String backendName,
 			boolean ignoreNonCssHints, boolean compareAttributes) throws IOException {
-		NodeList list = elm.getChildNodes();
+		DOMNodeList list = elm.getChildNodes();
 		NodeList otherList = otherdocElm.getChildNodes();
 		int sz = list.getLength();
 		if (sz != otherList.getLength()) {
@@ -895,8 +896,8 @@ public class SampleSitesIT {
 		//
 		int count = 0;
 		int delta = 0;
-		for (int i = 0; i < sz; i++) {
-			Node node = list.item(i);
+		int i = 0;
+		for (Node node : list) {
 			Node otherNode = otherList.item(i + delta);
 			if (node.getNodeType() == Node.ELEMENT_NODE) {
 				while (otherNode != null && otherNode.getNodeType() != Node.ELEMENT_NODE) {
@@ -918,6 +919,7 @@ public class SampleSitesIT {
 				count += checkTree((DOMElement) node, (CSSElement) otherNode, docToCompare, backendName,
 						ignoreNonCssHints, compareAttributes);
 			}
+			i++;
 		}
 		//
 		if (!compareComputedStyles(elm, otherdocElm, docToCompare, backendName, ignoreNonCssHints)) {
@@ -1219,8 +1221,8 @@ public class SampleSitesIT {
 		return unmatched;
 	}
 
-	private void compareChildList(NodeList domlist1, NodeList domlist2, DOMElement parent, String backendName)
-			throws IOException {
+	private void compareChildList(NodeList domlist1, NodeList domlist2, DOMElement parent,
+			String backendName) throws IOException {
 		int sz1 = domlist1.getLength();
 		int sz2 = domlist2.getLength();
 		NodeList list, other;
