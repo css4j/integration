@@ -301,15 +301,12 @@ public class SampleSitesIT {
 	}
 
 	private static Reader loadFileFromClasspath(final String filename) {
-		InputStream is = java.security.AccessController.doPrivileged(new java.security.PrivilegedAction<InputStream>() {
-			@Override
-			public InputStream run() {
-				return this.getClass().getResourceAsStream(filename);
-			}
-		});
+		InputStream is = SampleSitesIT.class.getResourceAsStream(filename);
+
 		if (is != null) {
 			return new InputStreamReader(is, StandardCharsets.UTF_8);
 		}
+
 		return null;
 	}
 
