@@ -208,19 +208,19 @@ public class SampleSitesIT {
 		strictErrorChecking = s == null || "true".equalsIgnoreCase(s);
 		// NSAC flags
 		s = config.getProperty("parser.starhack");
-		if (s != null && "true".equalsIgnoreCase(s)) {
+		if ("true".equalsIgnoreCase(s)) {
 			parserFlags.add(Parser.Flag.STARHACK);
 		}
 		s = config.getProperty("parser.ievalues");
-		if (s != null && "true".equalsIgnoreCase(s)) {
+		if ("true".equalsIgnoreCase(s)) {
 			parserFlags.add(Parser.Flag.IEVALUES);
 		}
 		s = config.getProperty("parser.ieprio");
-		if (s != null && "true".equalsIgnoreCase(s)) {
+		if ("true".equalsIgnoreCase(s)) {
 			parserFlags.add(Parser.Flag.IEPRIO);
 		}
 		s = config.getProperty("parser.iepriochar");
-		if (s != null && "true".equalsIgnoreCase(s)) {
+		if ("true".equalsIgnoreCase(s)) {
 			parserFlags.add(Parser.Flag.IEPRIOCHAR);
 		}
 		failOnWarning = "true".equalsIgnoreCase(config.getProperty("fail-on-warning", "false"));
