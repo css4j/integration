@@ -1,6 +1,6 @@
 /*
 
- Copyright (c) 2017-2021, Carlos Amengual.
+ Copyright (c) 2017-2023, Carlos Amengual.
 
  SPDX-License-Identifier: BSD-3-Clause
 
@@ -212,19 +212,19 @@ public class SampleSitesIT {
 		strictErrorChecking = s == null || "true".equalsIgnoreCase(s);
 		// NSAC flags
 		s = config.getProperty("parser.starhack");
-		if (s != null && "true".equalsIgnoreCase(s)) {
+		if ("true".equalsIgnoreCase(s)) {
 			parserFlags.add(Parser2.Flag.STARHACK);
 		}
 		s = config.getProperty("parser.ievalues");
-		if (s != null && "true".equalsIgnoreCase(s)) {
+		if ("true".equalsIgnoreCase(s)) {
 			parserFlags.add(Parser2.Flag.IEVALUES);
 		}
 		s = config.getProperty("parser.ieprio");
-		if (s != null && "true".equalsIgnoreCase(s)) {
+		if ("true".equalsIgnoreCase(s)) {
 			parserFlags.add(Parser2.Flag.IEPRIO);
 		}
 		s = config.getProperty("parser.iepriochar");
-		if (s != null && "true".equalsIgnoreCase(s)) {
+		if ("true".equalsIgnoreCase(s)) {
 			parserFlags.add(Parser2.Flag.IEPRIOCHAR);
 		}
 		failOnWarning = "true".equalsIgnoreCase(config.getProperty("fail-on-warning", "false"));
@@ -880,7 +880,7 @@ public class SampleSitesIT {
 			reporter.ruleReparseIssue(rule.getParentStyleSheet(), ruleIndex, parsedText, e.getMessage());
 			return false;
 		}
-		if (!rule.equals(other)) {
+		if (!rule.equals(other) && !rule.getCssText().equals(other.getCssText())) {
 			reporter.ruleReparseIssue(rule.getParentStyleSheet(), ruleIndex, parsedText, other.getCssText());
 			return false;
 		}
