@@ -1000,8 +1000,32 @@ public class SampleSitesIT {
 
 	private boolean compareComputedStyles(DOMElement elm, CSSElement otherdocElm, CSSDocument docToCompare,
 			String backendName, boolean ignoreNonCssHints) {
-		ComputedCSSStyle style = elm.getComputedStyle(null);
-		CSSComputedProperties otherStyle = otherdocElm.getComputedStyle(null);
+		ComputedCSSStyle style;
+		try {
+			style = elm.getComputedStyle(null);
+		} catch (RuntimeException e) {
+			reporter.error("Exception computing style for " + elm.getStartTag(), e);
+			try {
+				reporter.close();
+			} catch (IOException e1) {
+			}
+			throw e;
+		}
+
+		CSSComputedProperties otherStyle;
+
+		try {
+			otherStyle = otherdocElm.getComputedStyle(null);
+		} catch (RuntimeException e) {
+			reporter.error(
+					"Exception computing style for " + backendName + "'s " + elm.getStartTag(), e);
+			try {
+				reporter.close();
+			} catch (IOException e1) {
+			}
+			throw e;
+		}
+
 		boolean retval = true;
 		String failinfo = null;
 		if (!style.equals(otherStyle)) {

@@ -58,6 +58,8 @@ public interface SiteErrorReporter {
 
 	void computedStyleError(CSSElement element, String propertyName, CSSPropertyValueException ex);
 
+	void computedStyleExtraProperties(String message, DOMElement elm, String[] properties, String backendName);
+
 	void presentationalHintError(DOMElement element, Throwable ex);
 
 	void minifiedMissingProperty(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, String cssText,
@@ -111,9 +113,9 @@ public interface SiteErrorReporter {
 
 	void sacIssues(CSSStyleSheet<? extends CSSRule> sheet, int sheetIndex, SACErrorHandler errHandler);
 
-	void fail(String message);
+	void error(String message, Throwable exception);
 
-	void computedStyleExtraProperties(String message, DOMElement elm, String[] properties, String backendName);
+	void fail(String message);
 
 	void fail(String message, Throwable exception);
 

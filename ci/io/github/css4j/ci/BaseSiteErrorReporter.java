@@ -109,6 +109,11 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
+	public void error(String message, Throwable exception) {
+		writeError(message, exception);
+	}
+
+	@Override
 	public void sideComparison(String message) {
 		writeError("Failed comparison to " + rightSide + '.');
 		writeError(message);
