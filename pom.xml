@@ -220,6 +220,7 @@
 				<argLine>-Dfile.encoding=${project.build.sourceEncoding} -Xmx2048m</argLine>
 				<additionalClasspathElements>
 					<additionalClasspathElement>${project.basedir}/ci</additionalClasspathElement>
+					<argLine>-Xmx1g</argLine>
 				</additionalClasspathElements>
 			</configuration>
 			<executions>
