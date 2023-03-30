@@ -404,12 +404,12 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 					writeError("Error parsing media query: " + it.next().getMedia());
 				}
 			}
-			LinkedList<String> badInline = dseh.getBadInlineStyles();
-			if (badInline != null) {
+			LinkedList<String> badConditions = dseh.getConditionErrors();
+			if (badConditions != null) {
 				selectErrorTargetSheet(sheet, sheetIndex);
-				Iterator<String> it = badInline.iterator();
+				Iterator<String> it = badConditions.iterator();
 				while (it.hasNext()) {
-					writeError("Error parsing inline style: " + it.next());
+					writeError("Error processing rule condition: " + it.next());
 				}
 			}
 			LinkedList<String> ignoredImports = dseh.getIgnoredImports();
