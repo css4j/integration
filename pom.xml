@@ -11,7 +11,7 @@
   <properties>
 	<css4j.version>4.0</css4j.version>
 	<css4jDom4j.version>3.9.1</css4jDom4j.version>
-	<slf4j.version>2.0.6</slf4j.version>
+	<slf4j.version>2.0.7</slf4j.version>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <dependencies>
