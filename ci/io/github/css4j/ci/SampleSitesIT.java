@@ -312,14 +312,14 @@ public class SampleSitesIT {
 	@Parameters
 	public static Collection<Object[]> data() throws IOException {
 		List<Object[]> sites = new LinkedList<Object[]>();
-		BufferedReader re = new BufferedReader(loadFileFromClasspath(urlsFilename));
-		String site;
-		while ((site = re.readLine()) != null) {
-			if (site.length() != 0 && site.charAt(0) != '#') {
-				sites.add(new Object[] { site });
+		try (BufferedReader re = new BufferedReader(loadFileFromClasspath(urlsFilename))) {
+			String site;
+			while ((site = re.readLine()) != null) {
+				if (site.length() != 0 && site.charAt(0) != '#') {
+					sites.add(new Object[] { site });
+				}
 			}
 		}
-		re.close();
 		return sites;
 	}
 
