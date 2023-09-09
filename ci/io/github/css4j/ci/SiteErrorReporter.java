@@ -115,10 +115,34 @@ public interface SiteErrorReporter {
 
 	void error(String message, Throwable exception);
 
+	/**
+	 * Fail with the given message.
+	 * <p>
+	 * When failing, the implementation must call {@link #close()} and end the
+	 * execution by calling the relevant method by the testing framework.
+	 * </p>
+	 * 
+	 * @param message the message.
+	 */
 	void fail(String message);
 
+	/**
+	 * Fail with the given message and exception.
+	 * <p>
+	 * When failing, the implementation must call {@link #close()} and end the
+	 * execution by calling the relevant method by the testing framework.
+	 * </p>
+	 * 
+	 * @param message   the message.
+	 * @param exception the exception.
+	 */
 	void fail(String message, Throwable exception);
 
+	/**
+	 * Close the resources used by this reporter.
+	 * 
+	 * @throws IOException
+	 */
 	void close() throws IOException;
 
 }
