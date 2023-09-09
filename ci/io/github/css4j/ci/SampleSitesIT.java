@@ -170,10 +170,8 @@ public class SampleSitesIT {
 
 	static {
 		Properties config = new Properties();
-		Reader re = loadFileFromClasspath("samplesites.properties");
-		try {
+		try (Reader re = loadFileFromClasspath("samplesites.properties");) {
 			config.load(re);
-			re.close();
 		} catch (IOException e) {
 		}
 		File cachedir = null;
@@ -184,8 +182,11 @@ public class SampleSitesIT {
 				netcache = new NetCache(cachedir);
 			}
 		}
+
 		urlsFilename = config.getProperty("sites.file", "samplesites.txt");
-		//
+		log.info("Reading site list from: " + urlsFilename);
+
+		// Reporter configuration
 		s = config.getProperty("reporter", "log");
 		if (s.equalsIgnoreCase("tree")) {
 			errorReporterType = 1;
@@ -203,28 +204,45 @@ public class SampleSitesIT {
 		} else {
 			errorReporterType = 0;
 		}
+
 		// DOM error checking
 		s = config.getProperty("dom.strict-error-checking");
 		strictErrorChecking = s == null || "true".equalsIgnoreCase(s);
+		if (strictErrorChecking) {
+			log.info("Enabling strict DOM error checking.");
+		}
+
 		// NSAC flags
 		s = config.getProperty("parser.starhack");
 		if ("true".equalsIgnoreCase(s)) {
 			parserFlags.add(Parser.Flag.STARHACK);
+			log.info("IE star hack allowed.");
 		}
 		s = config.getProperty("parser.ievalues");
 		if ("true".equalsIgnoreCase(s)) {
 			parserFlags.add(Parser.Flag.IEVALUES);
+			log.info("IE common value hacks allowed.");
 		}
 		s = config.getProperty("parser.ieprio");
 		if ("true".equalsIgnoreCase(s)) {
 			parserFlags.add(Parser.Flag.IEPRIO);
+			log.info("IE !ie priority hack allowed.");
 		}
 		s = config.getProperty("parser.iepriochar");
 		if ("true".equalsIgnoreCase(s)) {
 			parserFlags.add(Parser.Flag.IEPRIOCHAR);
+			log.info("IE !important! priority hack allowed.");
 		}
+
 		failOnWarning = "true".equalsIgnoreCase(config.getProperty("fail-on-warning", "false"));
+		if (failOnWarning) {
+			log.info("Failing on warning.");
+		}
+
 		forceCacheRefresh = "true".equalsIgnoreCase(config.getProperty("cache.refresh", "false"));
+		if (forceCacheRefresh) {
+			log.info("Forcing cache refresh.");
+		}
 	}
 
 	HTMLDocument document;
@@ -238,10 +256,13 @@ public class SampleSitesIT {
 	public SampleSitesIT(String uri) throws IOException {
 		super();
 		agent = new MyDOMUserAgent();
+
 		if (!strictErrorChecking) {
 			agent.getDOMImplementation().setStrictErrorChecking(false);
 		}
+
 		dom4jAgent = new MyDOM4JUserAgent();
+
 		log.info("Testing URL: " + uri);
 		URL url = new URL(uri);
 
@@ -253,6 +274,7 @@ public class SampleSitesIT {
 			}
 			reporter = new TreeSiteErrorReporter();
 		}
+
 		reporter.startSiteReport(url);
 
 		try {
@@ -264,6 +286,7 @@ public class SampleSitesIT {
 			e.printStackTrace();
 			reporter.fail("Error retrieving document at " + url.toString(), e);
 		}
+
 		try {
 			dom4jdoc = dom4jAgent.readURL(url);
 		} catch (DocumentException e) {
@@ -316,6 +339,7 @@ public class SampleSitesIT {
 		 * First, make a native-to-dom4j sheet comparison
 		 */
 		reporter.setSideDescriptions("Native implementation", "DOM4J backend");
+
 		boolean result = false;
 		try {
 			result = compareSheets(dom4jdoc);
@@ -325,19 +349,23 @@ public class SampleSitesIT {
 		if (!result) {
 			reporter.fail("Different style sheets in backend: DOM4J.");
 		}
+
 		// Check rules (re-parse cssText serialization, including optimized serialization)
 		short reparseResult = checkRuleSerialization();
 		// Compare to DOM4J computed styles
 		HTMLElement html = document.getDocumentElement();
 		CSSElement dom4jHtml = dom4jdoc.getDocumentElement();
-		//
+
+		// Check DOM4J vs native DOM
 		int count = checkTree(html, dom4jHtml, dom4jdoc, "DOM4J", false, true);
+
 		/*
 		 * Now compare native DOM to DOM Wrapper computed styles
 		 */
 		WrapperFactory factory = new WrapperFactory();
 		factory.getUserAgent().setOriginPolicy(DefaultOriginPolicy.getInstance());
 		factory.setDefaultHTMLUserAgentSheet();
+
 		// If DOM wrapper comparison fails, do not stop
 		CSSDocument wrappedHtml = factory.createCSSDocument(document);
 		reporter.setSideDescriptions("Native implementation", "DOM wrapper");
@@ -352,7 +380,8 @@ public class SampleSitesIT {
 		} else {
 			checkTree(html, wrappedHtml.getDocumentElement(), wrappedHtml, "DOM wrapper", true, false);
 		}
-		// Check the computed styles
+
+		// Check the computed styles unless the document is too big
 		try {
 			document.setTargetMedium("screen");
 		} catch (CSSMediaException e) {
@@ -362,6 +391,7 @@ public class SampleSitesIT {
 				reporter.fail("Error(s) computing styles.");
 			}
 		}
+
 		// Report style issues
 		if (document.hasStyleIssues()) {
 			StyleSheetList list = document.getStyleSheets();
@@ -370,6 +400,7 @@ public class SampleSitesIT {
 				result = false;
 			}
 		}
+
 		// Now it is time to fail on deferred reparse issues
 		if (reparseResult == CSSRule.STYLE_RULE) {
 			reporter.fail("Issues with style rules were detected. Check the logs for details.");
@@ -377,11 +408,13 @@ public class SampleSitesIT {
 			reporter.fail("Serialization issues were detected (at least for rule type " + reparseResult
 					+ "). Check the logs for details.");
 		}
+
 		// DOM wrapper issues?
 		if (!result) {
 			reporter.fail(failMessage);
 		}
-		//
+
+		// Close the reporter
 		reporter.close();
 	}
 
@@ -465,6 +498,7 @@ public class SampleSitesIT {
 			}
 			return false;
 		}
+
 		// Compare the two sheet lists
 		boolean ret = true;
 		for (int i = 0; i < sheetlen; i++) {
@@ -502,6 +536,7 @@ public class SampleSitesIT {
 				break;
 			}
 		}
+
 		// Compare merged style sheet
 		CSSStyleSheet<AbstractCSSRule> merged = document.getStyleSheet();
 		CSSStyleSheet<AbstractCSSRule> otherMerged = otherDoc.getStyleSheet();
@@ -690,6 +725,7 @@ public class SampleSitesIT {
 			e.printStackTrace();
 			return false;
 		}
+
 		BaseCSSStyleDeclaration ministyle = (BaseCSSStyleDeclaration) stylerule.getStyle();
 		try {
 			ministyle.setCssText(mini);
@@ -705,6 +741,7 @@ public class SampleSitesIT {
 			reporter.minifiedParseErrors(style.getCssText(), mini, stylerule.getStyleDeclarationErrorHandler());
 			result = false;
 		}
+
 		return result;
 	}
 
@@ -732,6 +769,7 @@ public class SampleSitesIT {
 			}
 			foundDiff = true;
 		}
+
 		ValueComparator comp = new ValueComparator(style);
 		StyleValue value, minivalue;
 		if (different != null) {
@@ -755,6 +793,7 @@ public class SampleSitesIT {
 				}
 			}
 		}
+
 		return foundDiff;
 	}
 
@@ -770,11 +809,13 @@ public class SampleSitesIT {
 			reporter.ruleReparseIssue(rule.getParentStyleSheet(), ruleIndex, serializedText, e.getMessage());
 			return false;
 		}
+
 		BaseCSSStyleDeclaration otherStyle = (BaseCSSStyleDeclaration) other.getStyle();
 		if (!style.equals(otherStyle)
 				&& reportStyleDiff(rule.getParentStyleSheet(), ruleIndex, style, otherStyle, serializedText)) {
 			result = false;
 		}
+
 		if (!rule.getStyleDeclarationErrorHandler().hasErrors()
 				&& other.getStyleDeclarationErrorHandler().hasErrors()) {
 			String original = style.getCssText();
@@ -817,6 +858,7 @@ public class SampleSitesIT {
 		if (!diff.hasDifferences()) {
 			return false;
 		}
+
 		boolean result = false;
 		String[] left = diff.getLeftSide();
 		String[] right = diff.getRightSide();
@@ -831,6 +873,7 @@ public class SampleSitesIT {
 				}
 			}
 		}
+
 		if (right != null) {
 			for (int k = 0; k < right.length; k++) {
 				reporter.reparsedExtraProperty(parent, ruleIndex, parsedText, otherStyle.getCssText(), right[k],
@@ -838,6 +881,7 @@ public class SampleSitesIT {
 			}
 			result = true;
 		}
+
 		StyleValue value, reparsedValue;
 		if (different != null) {
 			ValueComparator comp = new ValueComparator(style);
@@ -861,6 +905,7 @@ public class SampleSitesIT {
 				}
 			}
 		}
+
 		return result;
 	}
 
@@ -873,10 +918,12 @@ public class SampleSitesIT {
 			reporter.ruleReparseIssue(rule.getParentStyleSheet(), ruleIndex, parsedText, e.getMessage());
 			return false;
 		}
+
 		if (!rule.equals(other) && !rule.getCssText().equals(other.getCssText())) {
 			reporter.ruleReparseIssue(rule.getParentStyleSheet(), ruleIndex, parsedText, other.getCssText());
 			return false;
 		}
+
 		return true;
 	}
 
@@ -936,6 +983,7 @@ public class SampleSitesIT {
 			reporter.fail("Right side has more attributes in element: " + child.getStartTag());
 			return false;
 		}
+
 		if (!attrs.isEmpty()) {
 			Iterator<Attr> it = attrs.iterator();
 			while (it.hasNext()) {
@@ -1177,9 +1225,11 @@ public class SampleSitesIT {
 				}
 			}
 		}
+
 		if (failinfo != null) {
 			reporter.fail(failinfo);
 		}
+
 		return retval;
 	}
 
@@ -1196,6 +1246,7 @@ public class SampleSitesIT {
 				retval = false;
 			}
 		}
+
 		ErrorHandler eh = element.getOwnerDocument().getErrorHandler();
 		if (eh.hasComputedStyleErrors(element)) {
 			HashMap<String, CSSPropertyValueException> csemap = ((DefaultErrorHandler) eh)
@@ -1218,6 +1269,7 @@ public class SampleSitesIT {
 				}
 			}
 		}
+
 		Iterator<DOMElement> it = element.elementIterator();
 		while (it.hasNext()) {
 			DOMElement elm = it.next();
@@ -1225,6 +1277,7 @@ public class SampleSitesIT {
 				retval = false;
 			}
 		}
+
 		return retval;
 	}
 
@@ -1272,6 +1325,7 @@ public class SampleSitesIT {
 			}
 		}
 		countdiff += delta;
+
 		if (countdiff != 0) {
 			for (int i = 0; i < countdiff; i++) {
 				Node nodeo = other.item(i + sz);
@@ -1283,6 +1337,7 @@ public class SampleSitesIT {
 				}
 			}
 		}
+
 		if (!nodediff.isEmpty()) {
 			reporter.differentNodes(parent, nodediff);
 			reporter.fail(backendName + " comparison: found " + nodediff.size() + " different node(s) for parent: "
@@ -1385,10 +1440,12 @@ public class SampleSitesIT {
 		@Override
 		protected AgentXHTMLDocument parseDocument(Reader re) throws DocumentException, IOException {
 			InputSource source = new InputSource(re);
+
 			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 			parser.setReportingDoctype(true);
 			parser.setCommentPolicy(XmlViolationPolicy.ALLOW);
 			parser.setXmlnsPolicy(XmlViolationPolicy.ALLOW);
+
 			XMLDocumentBuilder builder = new XMLDocumentBuilder(getXHTMLDocumentFactory());
 			builder.setHTMLProcessing(true);
 			builder.setXMLReader(parser);
