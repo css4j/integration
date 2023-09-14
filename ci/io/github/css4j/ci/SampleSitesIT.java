@@ -357,7 +357,14 @@ public class SampleSitesIT {
 		CSSElement dom4jHtml = dom4jdoc.getDocumentElement();
 
 		// Check DOM4J vs native DOM
-		int count = checkTree(html, dom4jHtml, dom4jdoc, "DOM4J", false, true);
+		int count;
+
+		try {
+			count = checkTree(html, dom4jHtml, dom4jdoc, "DOM4J", false, true);
+		} catch (RuntimeException e) {
+			reporter.error("Error checking tree vs DOM4J.", e);
+			count = 0;
+		}
 
 		/*
 		 * Now compare native DOM to DOM Wrapper computed styles
@@ -378,7 +385,12 @@ public class SampleSitesIT {
 		if (!result) {
 			failMessage = "Different style sheets in backend: DOM wrapper.";
 		} else {
-			checkTree(html, wrappedHtml.getDocumentElement(), wrappedHtml, "DOM wrapper", true, false);
+			try {
+				checkTree(html, wrappedHtml.getDocumentElement(), wrappedHtml, "DOM wrapper", true,
+						false);
+			} catch (RuntimeException e) {
+				reporter.error("Error checking tree vs DOM wrapper.", e);
+			}
 		}
 
 		// Check the computed styles unless the document is too big
@@ -387,7 +399,14 @@ public class SampleSitesIT {
 		} catch (CSSMediaException e) {
 		}
 		if (count < 1000) {
-			if (!computeStyles(html)) {
+			boolean computeResult;
+			try {
+				computeResult = computeStyles(html);
+			} catch (RuntimeException e) {
+				reporter.fail("Runtime error computing styles.", e);
+				return;
+			}
+			if (!computeResult) {
 				reporter.fail("Error(s) computing styles.");
 			}
 		}
