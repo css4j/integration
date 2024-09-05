@@ -25,12 +25,12 @@ import io.sf.carte.doc.style.css.CSSUnit;
 import io.sf.carte.doc.style.css.CSSValue;
 import io.sf.carte.doc.style.css.CSSValue.CssType;
 import io.sf.carte.doc.style.css.CSSValue.Type;
+import io.sf.carte.doc.style.css.CSSValueList;
 import io.sf.carte.doc.style.css.RGBAColor;
 import io.sf.carte.doc.style.css.nsac.LexicalUnit;
 import io.sf.carte.doc.style.css.om.BaseCSSStyleDeclaration;
 import io.sf.carte.doc.style.css.om.CSSOMBridge;
 import io.sf.carte.doc.style.css.parser.ParseHelper;
-import io.sf.carte.doc.style.css.property.LinkedCSSValueList;
 import io.sf.carte.doc.style.css.property.NumberValue;
 import io.sf.carte.doc.style.css.property.PropertyDatabase;
 import io.sf.carte.doc.style.css.property.StyleValue;
@@ -222,14 +222,14 @@ class ValueComparator {
 				if (gradient.getGradientType() != gradientOther.getGradientType()) {
 					return 2;
 				}
-				LinkedCSSValueList args = gradient.getArguments();
-				LinkedCSSValueList argsOther = gradientOther.getArguments();
+				CSSValueList<? extends CSSValue> args = gradient.getArguments();
+				CSSValueList<? extends CSSValue> argsOther = gradientOther.getArguments();
 				if (args.getLength() != argsOther.getLength()) {
 					return 2;
 				}
 				for (int i = 0; i < args.getLength(); i++) {
-					StyleValue arg = args.item(i);
-					StyleValue argOther = argsOther.item(i);
+					CSSValue arg = args.item(i);
+					CSSValue argOther = argsOther.item(i);
 					if (!arg.equals(argOther)) {
 						int result = testDifferentValue(arg, argOther);
 						if (result != 1) {
