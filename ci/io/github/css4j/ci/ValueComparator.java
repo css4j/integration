@@ -31,13 +31,12 @@ import io.sf.carte.doc.style.css.nsac.LexicalUnit;
 import io.sf.carte.doc.style.css.om.BaseCSSStyleDeclaration;
 import io.sf.carte.doc.style.css.om.CSSOMBridge;
 import io.sf.carte.doc.style.css.parser.ParseHelper;
+import io.sf.carte.doc.style.css.property.LexicalValue;
 import io.sf.carte.doc.style.css.property.NumberValue;
 import io.sf.carte.doc.style.css.property.PropertyDatabase;
 import io.sf.carte.doc.style.css.property.StyleValue;
 import io.sf.carte.doc.style.css.property.URIValue;
-import io.sf.carte.doc.style.css.property.ValueFactory;
 import io.sf.carte.doc.style.css.property.ValueList;
-import io.sf.carte.doc.style.css.property.VarValue;
 
 class ValueComparator {
 
@@ -251,31 +250,23 @@ class ValueComparator {
 				&& otherValue.getCssValueType() == CssType.PROXY) {
 			Type ptype = value.getPrimitiveType();
 			Type otype = otherValue.getPrimitiveType();
-			if (ptype == Type.VAR && otype == Type.VAR) {
-				VarValue var = (VarValue) value;
-				VarValue varOther = (VarValue) otherValue;
-				if (var.getName().equals(varOther.getName())) {
-					LexicalUnit fb = var.getFallback();
-					LexicalUnit fbOther = varOther.getFallback();
-					if (fb == null) {
-						if (fbOther == null) {
+			if (ptype == Type.LEXICAL && otype == Type.LEXICAL) {
+				LexicalValue var = (LexicalValue) value;
+				LexicalValue varOther = (LexicalValue) otherValue;
+				LexicalUnit lu = var.getLexicalUnit().getParameters();
+				LexicalUnit luOther = varOther.getLexicalUnit().getParameters();
+				do {
+					lu = lu.getNextLexicalUnit();
+					luOther = luOther.getNextLexicalUnit();
+					if (lu == null) {
+						if (luOther == null) {
 							return 1;
 						}
-					} else if (fbOther != null) {
-						if (fb.equals(fbOther)) {
-							return 1;
-						}
-						ValueFactory vf = new ValueFactory();
-						StyleValue fbOm, fbOtherOm;
-						try {
-							fbOm = vf.createCSSValue(fb);
-							fbOtherOm = vf.createCSSValue(fbOther);
-						} catch (DOMException e) {
-							return 2;
-						}
-						return testDifferentValue(fbOm, fbOtherOm);
+						break;
+					} else if (luOther != null && !lu.equals(luOther)) {
+						break;
 					}
-				}
+				} while (true);
 			}
 			return 2;
 		} else if (value.getCssValueType() == CssType.LIST
