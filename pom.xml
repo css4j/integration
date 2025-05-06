@@ -9,8 +9,8 @@
   <version>2.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <properties>
-	<css4j.version>5.2</css4j.version>
-	<css4jDom4j.version>5.1</css4jDom4j.version>
+	<css4j.version>5.3.1</css4j.version>
+	<css4jDom4j.version>5.3</css4jDom4j.version>
 	<slf4j.version>2.0.16</slf4j.version>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -46,7 +46,7 @@
 	<dependency>
 		<groupId>io.sf.carte</groupId>
 		<artifactId>css4j-agent</artifactId>
-		<version>5.0</version>
+		<version>5.3</version>
 		<type>jar</type>
 		<scope>compile</scope>
 		<optional>false</optional>
