@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -194,7 +195,8 @@ public class SampleSitesIT {
 				if (failfile.exists()) {
 					File oldfailfile = new File(failfile.getAbsolutePath() + ".old");
 					try {
-						Files.move(failfile.toPath(), oldfailfile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+						Files.move(failfile.toPath(), oldfailfile.toPath(),
+								StandardCopyOption.REPLACE_EXISTING);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -212,11 +214,6 @@ public class SampleSitesIT {
 		}
 
 		// NSAC flags
-		s = config.getProperty("parser.starhack");
-		if ("true".equalsIgnoreCase(s)) {
-			parserFlags.add(Parser.Flag.STARHACK);
-			log.info("IE star hack allowed.");
-		}
 		s = config.getProperty("parser.ievalues");
 		if ("true".equalsIgnoreCase(s)) {
 			parserFlags.add(Parser.Flag.IEVALUES);
@@ -333,7 +330,8 @@ public class SampleSitesIT {
 	}
 
 	@Test
-	public void testSampleSites() throws IOException, DocumentException, ParserConfigurationException {
+	public void testSampleSites()
+			throws IOException, DocumentException, ParserConfigurationException {
 		/*
 		 * First, make a native-to-dom4j sheet comparison
 		 */
@@ -423,8 +421,8 @@ public class SampleSitesIT {
 		if (reparseResult == CSSRule.STYLE_RULE) {
 			reporter.fail("Issues with style rules were detected. Check the logs for details.");
 		} else if (reparseResult != -1) {
-			reporter.fail("Serialization issues were detected (at least for rule type " + reparseResult
-					+ "). Check the logs for details.");
+			reporter.fail("Serialization issues were detected (at least for rule type "
+					+ reparseResult + "). Check the logs for details.");
 		}
 
 		// DOM wrapper issues?
@@ -441,8 +439,10 @@ public class SampleSitesIT {
 		int sz = list.getLength();
 		for (int i = 0; i < sz; i++) {
 			AbstractCSSStyleSheet sheet = list.item(i);
-			DefaultSheetErrorHandler errHandler = (DefaultSheetErrorHandler) sheet.getErrorHandler();
-			if (errHandler.hasSacErrors() || errHandler.hasSacWarnings() || sheet.hasRuleErrorsOrWarnings()) {
+			DefaultSheetErrorHandler errHandler = (DefaultSheetErrorHandler) sheet
+					.getErrorHandler();
+			if (errHandler.hasSacErrors() || errHandler.hasSacWarnings()
+					|| sheet.hasRuleErrorsOrWarnings()) {
 				if (sheet.hasRuleErrorsOrWarnings()) {
 					CSSRuleArrayList rules = sheet.getCssRules();
 					for (AbstractCSSRule rule : rules) {
@@ -521,17 +521,20 @@ public class SampleSitesIT {
 		boolean ret = true;
 		for (int i = 0; i < sheetlen; i++) {
 			AbstractCSSStyleSheet csssheet = sheets.item(i);
-			io.sf.carte.doc.style.css.CSSStyleSheet<? extends CSSRule> othercsssheet = otherSheets.item(i);
+			io.sf.carte.doc.style.css.CSSStyleSheet<? extends CSSRule> othercsssheet = otherSheets
+					.item(i);
 			String href = csssheet.getHref();
 			String ohref = othercsssheet.getHref();
 			if (!Objects.equals(href, ohref)) {
-				reporter.sideComparison("Different href in sheet " + i + ", " + href + " vs " + ohref);
+				reporter.sideComparison(
+						"Different href in sheet " + i + ", " + href + " vs " + ohref);
 				ret = false;
 			}
 			MediaList media = csssheet.getMedia();
 			MediaList omedia = othercsssheet.getMedia();
 			if (!Objects.equals(media, omedia)) {
-				reporter.sideComparison("Different media in sheet " + i + ", " + media + " vs " + omedia);
+				reporter.sideComparison(
+						"Different media in sheet " + i + ", " + media + " vs " + omedia);
 				ret = false;
 			}
 			String title = csssheet.getTitle();
@@ -543,7 +546,8 @@ public class SampleSitesIT {
 				otitle = "";
 			}
 			if (!title.equals(otitle)) {
-				reporter.sideComparison("Different title in sheet " + i + ", " + title + " vs " + otitle);
+				reporter.sideComparison(
+						"Different title in sheet " + i + ", " + title + " vs " + otitle);
 				ret = false;
 			}
 			// Rules
@@ -587,16 +591,16 @@ public class SampleSitesIT {
 			CSSRuleList<? extends CSSRule> orules, boolean ret) {
 		int n = rules.getLength();
 		if (n != orules.getLength()) {
-			reporter.sideComparison(
-					"Different number of rules in sheet " + sheetIndex + ", " + n + " vs " + orules.getLength());
+			reporter.sideComparison("Different number of rules in sheet " + sheetIndex + ", " + n
+					+ " vs " + orules.getLength());
 			return false;
 		}
 		for (int j = 0; j < n; j++) {
 			AbstractCSSRule rule = rules.item(j);
 			AbstractCSSRule orule = (AbstractCSSRule) orules.item(j);
 			if (!rule.equals(orule)) {
-				reporter.sideComparison("Different rules in sheet " + sheetIndex + ", rule " + j + ": "
-						+ rule.getCssText() + " vs " + orule.getCssText());
+				reporter.sideComparison("Different rules in sheet " + sheetIndex + ", rule " + j
+						+ ": " + rule.getCssText() + " vs " + orule.getCssText());
 				ret = false;
 			}
 		}
@@ -624,16 +628,19 @@ public class SampleSitesIT {
 					reporter.inlineStyleError(null, eoEntry.getKey(), eoEntry.getValue());
 				}
 			}
-			LinkedHashMap<Exception, CSSStyleSheet<? extends CSSRule>> linkedSheetErrs = eh.getLinkedSheetErrors();
+			LinkedHashMap<Exception, CSSStyleSheet<? extends CSSRule>> linkedSheetErrs = eh
+					.getLinkedSheetErrors();
 			if (linkedSheetErrs != null) {
-				for (Entry<Exception, CSSStyleSheet<? extends CSSRule>> eoEntry : linkedSheetErrs.entrySet()) {
+				for (Entry<Exception, CSSStyleSheet<? extends CSSRule>> eoEntry : linkedSheetErrs
+						.entrySet()) {
 					reporter.linkedSheetError(eoEntry.getKey(), eoEntry.getValue());
 				}
 			}
 			Set<CSSElement> owners = eh.getInlineStyleOwners();
 			if (owners != null) {
 				for (CSSElement owner : owners) {
-					StyleDeclarationErrorHandler styleHandler = eh.getInlineStyleErrorHandler(owner);
+					StyleDeclarationErrorHandler styleHandler = eh
+							.getInlineStyleErrorHandler(owner);
 					if (styleHandler.hasErrors()) {
 						reporter.inlineStyleError(owner, styleHandler);
 					}
@@ -665,8 +672,8 @@ public class SampleSitesIT {
 		return result;
 	}
 
-	private short checkRuleListSerialization(CSSRuleArrayList rules, int sheetIndex, AbstractCSSStyleSheet sheet)
-			throws DOMException, IOException {
+	private short checkRuleListSerialization(CSSRuleArrayList rules, int sheetIndex,
+			AbstractCSSStyleSheet sheet) throws DOMException, IOException {
 		short result = -1;
 		int rulen = rules.getLength();
 		for (int j = 0; j < rulen; j++) {
@@ -691,7 +698,8 @@ public class SampleSitesIT {
 			if (!checkDeclarationRule(stylerule, sheetIndex, ruleIndex, sheet, rule.getCssText())) {
 				result = ruleType;
 			}
-			if (!checkDeclarationRule(stylerule, sheetIndex, ruleIndex, sheet, rule.getMinifiedCssText())) {
+			if (!checkDeclarationRule(stylerule, sheetIndex, ruleIndex, sheet,
+					rule.getMinifiedCssText())) {
 				result = ruleType;
 			}
 			if (!checkSelectors(stylerule, sheetIndex, ruleIndex, sheet)) {
@@ -702,11 +710,13 @@ public class SampleSitesIT {
 			if (!checkDeclarationRule(declrule, sheetIndex, ruleIndex, sheet, rule.getCssText())) {
 				result = ruleType;
 			}
-			if (!checkDeclarationRule(declrule, sheetIndex, ruleIndex, sheet, rule.getMinifiedCssText())) {
+			if (!checkDeclarationRule(declrule, sheetIndex, ruleIndex, sheet,
+					rule.getMinifiedCssText())) {
 				result = ruleType;
 			}
 		} else if (rule instanceof GroupingRule) {
-			short groupResult = checkGroupingRule((GroupingRule) rule, sheetIndex, ruleIndex, sheet);
+			short groupResult = checkGroupingRule((GroupingRule) rule, sheetIndex, ruleIndex,
+					sheet);
 			if (groupResult != -1) {
 				result = groupResult;
 			}
@@ -727,7 +737,7 @@ public class SampleSitesIT {
 			mini = CSSOMBridge.getOptimizedCssText(style);
 		} catch (Exception e) {
 			reporter.minifiedParseErrors(style.getCssText(), e.getMessage(),
-				stylerule.getStyleDeclarationErrorHandler());
+					stylerule.getStyleDeclarationErrorHandler());
 			e.printStackTrace();
 			return false;
 		}
@@ -739,20 +749,23 @@ public class SampleSitesIT {
 			reporter.ruleReparseIssue(rule.getParentStyleSheet(), ruleIndex, mini, e.getMessage());
 			return false;
 		}
-		if (!style.equals(ministyle)
-				&& reportMinifiedStyleDiff(rule.getParentStyleSheet(), ruleIndex, style, ministyle, mini)) {
+		if (!style.equals(ministyle) && reportMinifiedStyleDiff(rule.getParentStyleSheet(),
+				ruleIndex, style, ministyle, mini)) {
 			result = false;
 		}
-		if (stylerule.getStyleDeclarationErrorHandler().hasErrors() && mini.indexOf('\ufffd') == -1) {
-			reporter.minifiedParseErrors(style.getCssText(), mini, stylerule.getStyleDeclarationErrorHandler());
+		if (stylerule.getStyleDeclarationErrorHandler().hasErrors()
+				&& mini.indexOf('\ufffd') == -1) {
+			reporter.minifiedParseErrors(style.getCssText(), mini,
+					stylerule.getStyleDeclarationErrorHandler());
 			result = false;
 		}
 
 		return result;
 	}
 
-	private boolean reportMinifiedStyleDiff(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, BaseCSSStyleDeclaration style,
-			BaseCSSStyleDeclaration otherstyle, String serializedText) {
+	private boolean reportMinifiedStyleDiff(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex,
+			BaseCSSStyleDeclaration style, BaseCSSStyleDeclaration otherstyle,
+			String serializedText) {
 		boolean foundDiff = false;
 		Diff<String> diff = style.diff(otherstyle);
 		String[] left = diff.getLeftSide();
@@ -761,16 +774,16 @@ public class SampleSitesIT {
 		if (left != null) {
 			for (String property : left) {
 				if (property.charAt(0) != '*' && property.charAt(property.length() - 1) != 0xfffd) {
-					reporter.minifiedMissingProperty(parent, ruleIndex, style.getCssText(), serializedText, property,
-							style.getPropertyValue(property));
+					reporter.minifiedMissingProperty(parent, ruleIndex, style.getCssText(),
+							serializedText, property, style.getPropertyValue(property));
 					foundDiff = true;
 				}
 			}
 		}
 		if (right != null) {
 			for (String property : right) {
-				reporter.minifiedExtraProperty(parent, ruleIndex, style.getCssText(), serializedText, property,
-						style.getPropertyValue(property));
+				reporter.minifiedExtraProperty(parent, ruleIndex, style.getCssText(),
+						serializedText, property, style.getPropertyValue(property));
 			}
 			foundDiff = true;
 		}
@@ -791,8 +804,8 @@ public class SampleSitesIT {
 					if (prio.length() != 0) {
 						miniValueText += "!" + prio;
 					}
-					reporter.minifiedDifferentValues(parent, ruleIndex, style.getCssText(), serializedText, property,
-							valueText, miniValueText);
+					reporter.minifiedDifferentValues(parent, ruleIndex, style.getCssText(),
+							serializedText, property, valueText, miniValueText);
 					foundDiff = true;
 				}
 			}
@@ -805,18 +818,18 @@ public class SampleSitesIT {
 			AbstractCSSStyleSheet sheet, String serializedText) {
 		boolean result = true;
 		BaseCSSStyleDeclaration style = (BaseCSSStyleDeclaration) rule.getStyle();
-		CSSDeclarationRule other = (CSSDeclarationRule) ((AbstractCSSRule) rule).clone(sheet);
-		other.getStyle().setCssText("");
+		CSSDeclarationRule other;
 		try {
-			other.setCssText(serializedText);
+			other = (CSSDeclarationRule) parseRule(serializedText);
 		} catch (DOMException e) {
-			reporter.ruleReparseIssue(rule.getParentStyleSheet(), ruleIndex, serializedText, e.getMessage());
+			reporter.ruleReparseIssue(rule.getParentStyleSheet(), ruleIndex, serializedText,
+					e.getMessage());
 			return false;
 		}
 
 		BaseCSSStyleDeclaration otherStyle = (BaseCSSStyleDeclaration) other.getStyle();
-		if (!style.equals(otherStyle)
-				&& reportStyleDiff(rule.getParentStyleSheet(), ruleIndex, style, otherStyle, serializedText)) {
+		if (!style.equals(otherStyle) && reportStyleDiff(rule.getParentStyleSheet(), ruleIndex,
+				style, otherStyle, serializedText)) {
 			result = false;
 		}
 
@@ -824,30 +837,40 @@ public class SampleSitesIT {
 				&& other.getStyleDeclarationErrorHandler().hasErrors()) {
 			String original = style.getCssText();
 			if (original.indexOf('\ufffd') == -1) {
-				reporter.ruleReparseErrors(original, otherStyle.getCssText(), rule.getStyleDeclarationErrorHandler());
+				reporter.ruleReparseErrors(original, otherStyle.getCssText(),
+						rule.getStyleDeclarationErrorHandler());
 				result = false;
 			}
 		}
 		return result;
 	}
 
+	private AbstractCSSRule parseRule(String serializedText) throws DOMException {
+		AbstractCSSStyleSheet sheet = agent.getDOMImplementation().createStyleSheet(null, null);
+		try {
+			sheet.parseStyleSheet(new StringReader(serializedText));
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
+		return sheet.getCssRules().item(0);
+	}
+
 	private boolean checkSelectors(StyleRule stylerule, int sheetIndex, int ruleIndex,
 			AbstractCSSStyleSheet sheet) {
 		SelectorList selist = stylerule.getSelectorList();
 		String cssText = stylerule.getCssText();
-		StyleRule orule = sheet.createStyleRule();
-		orule.setCssText(cssText);
+		StyleRule orule = (StyleRule) parseRule(cssText);
 		SelectorList oselist = orule.getSelectorList();
 		boolean result = ParseHelper.equalSelectorList(selist, oselist);
 		if (!result) {
-			reporter.ruleSelectorError(stylerule, selist, oselist, orule.getSelectorText(), sheetIndex, ruleIndex,
-					sheet);
+			reporter.ruleSelectorError(stylerule, selist, oselist, orule.getSelectorText(),
+					sheetIndex, ruleIndex, sheet);
 		}
 		return result;
 	}
 
-	private short checkGroupingRule(GroupingRule rule, int sheetIndex, int ruleIndex, AbstractCSSStyleSheet sheet)
-			throws DOMException, IOException {
+	private short checkGroupingRule(GroupingRule rule, int sheetIndex, int ruleIndex,
+			AbstractCSSStyleSheet sheet) throws DOMException, IOException {
 		short result = -1;
 		short ruleListResult = checkRuleListSerialization(rule.getCssRules(), sheetIndex, sheet);
 		if (ruleListResult != -1) {
@@ -856,8 +879,8 @@ public class SampleSitesIT {
 		return result;
 	}
 
-	private boolean reportStyleDiff(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex, BaseCSSStyleDeclaration style,
-			BaseCSSStyleDeclaration otherStyle, String parsedText) {
+	private boolean reportStyleDiff(CSSStyleSheet<? extends CSSRule> parent, int ruleIndex,
+			BaseCSSStyleDeclaration style, BaseCSSStyleDeclaration otherStyle, String parsedText) {
 		Diff<String> diff = style.diff(otherStyle);
 		if (!diff.hasDifferences()) {
 			return false;
@@ -870,8 +893,8 @@ public class SampleSitesIT {
 		if (left != null) {
 			for (String property : left) {
 				if (property.charAt(0) != '*' && property.charAt(property.length() - 1) != 0xfffd) {
-					reporter.reparsedMissingProperty(parent, ruleIndex, parsedText, otherStyle.getCssText(), property,
-							style.getPropertyValue(property));
+					reporter.reparsedMissingProperty(parent, ruleIndex, parsedText,
+							otherStyle.getCssText(), property, style.getPropertyValue(property));
 					result = true;
 				}
 			}
@@ -879,8 +902,8 @@ public class SampleSitesIT {
 
 		if (right != null) {
 			for (String property : right) {
-				reporter.reparsedExtraProperty(parent, ruleIndex, parsedText, otherStyle.getCssText(), property,
-						style.getPropertyValue(property));
+				reporter.reparsedExtraProperty(parent, ruleIndex, parsedText,
+						otherStyle.getCssText(), property, style.getPropertyValue(property));
 			}
 			result = true;
 		}
@@ -901,8 +924,8 @@ public class SampleSitesIT {
 					if (prio.length() != 0) {
 						reparsedValueText += "!" + prio;
 					}
-					reporter.reparsedDifferentValues(parent, ruleIndex, parsedText, otherStyle.getCssText(), property,
-							valueText, reparsedValueText);
+					reporter.reparsedDifferentValues(parent, ruleIndex, parsedText,
+							otherStyle.getCssText(), property, valueText, reparsedValueText);
 					result = true;
 				}
 			}
@@ -911,32 +934,37 @@ public class SampleSitesIT {
 		return result;
 	}
 
-	private boolean checkRule(AbstractCSSRule rule, int sheetIndex, int ruleIndex, AbstractCSSStyleSheet sheet) {
-		AbstractCSSRule other = rule.clone(sheet);
+	private boolean checkRule(AbstractCSSRule rule, int sheetIndex, int ruleIndex,
+			AbstractCSSStyleSheet sheet) {
 		String parsedText = rule.getCssText();
+		AbstractCSSRule other;
 		try {
-			other.setCssText(parsedText);
+			other = parseRule(parsedText);
 		} catch (DOMException e) {
-			reporter.ruleReparseIssue(rule.getParentStyleSheet(), ruleIndex, parsedText, e.getMessage());
+			reporter.ruleReparseIssue(rule.getParentStyleSheet(), ruleIndex, parsedText,
+					e.getMessage());
 			return false;
 		}
 
 		if (!rule.equals(other) && !rule.getCssText().equals(other.getCssText())) {
-			reporter.ruleReparseIssue(rule.getParentStyleSheet(), ruleIndex, parsedText, other.getCssText());
+			reporter.ruleReparseIssue(rule.getParentStyleSheet(), ruleIndex, parsedText,
+					other.getCssText());
 			return false;
 		}
 
 		return true;
 	}
 
-	private int checkTree(DOMElement elm, CSSElement otherdocElm, CSSDocument docToCompare, String backendName,
-			boolean ignoreNonCssHints, boolean compareAttributes) throws IOException {
+	private int checkTree(DOMElement elm, CSSElement otherdocElm, CSSDocument docToCompare,
+			String backendName, boolean ignoreNonCssHints, boolean compareAttributes)
+			throws IOException {
 		DOMNodeList list = elm.getChildNodes();
 		NodeList otherList = otherdocElm.getChildNodes();
 		int sz = list.getLength();
 		if (sz != otherList.getLength()) {
 			compareChildList(list, otherList, elm, backendName);
-			reporter.fail("Different number of child at element " + elm.getTagName() + " for " + backendName);
+			reporter.fail("Different number of child at element " + elm.getTagName() + " for "
+					+ backendName);
 			return 0;
 		}
 		//
@@ -957,25 +985,28 @@ public class SampleSitesIT {
 				// Check attributes
 				DOMElement child = (DOMElement) node;
 				CSSElement otherChild = (CSSElement) otherNode;
-				if (compareAttributes && !compareAttributes(child, child.getAttributes(), otherChild.getAttributes())) {
+				if (compareAttributes && !compareAttributes(child, child.getAttributes(),
+						otherChild.getAttributes())) {
 					return 0;
 				}
 				//
 				count++;
-				count += checkTree((DOMElement) node, (CSSElement) otherNode, docToCompare, backendName,
-						ignoreNonCssHints, compareAttributes);
+				count += checkTree((DOMElement) node, (CSSElement) otherNode, docToCompare,
+						backendName, ignoreNonCssHints, compareAttributes);
 			}
 			i++;
 		}
 		//
-		if (!compareComputedStyles(elm, otherdocElm, docToCompare, backendName, ignoreNonCssHints)) {
+		if (!compareComputedStyles(elm, otherdocElm, docToCompare, backendName,
+				ignoreNonCssHints)) {
 			reporter.fail("Different computed styles found");
 			return 0;
 		}
 		return count;
 	}
 
-	private boolean compareAttributes(DOMElement child, AttributeNamedNodeMap attrs, NamedNodeMap otherAttrs) {
+	private boolean compareAttributes(DOMElement child, AttributeNamedNodeMap attrs,
+			NamedNodeMap otherAttrs) {
 		int len = attrs.getLength();
 		int otherLen = otherAttrs.getLength();
 		if (len > otherLen) {
@@ -990,12 +1021,13 @@ public class SampleSitesIT {
 			for (Attr attr : attrs) {
 				short ret = compareAttribute(child, attr, otherAttrs);
 				if (ret == 2) {
-					reporter.fail("Element " + child.getStartTag() + ": no attribute " + attr.getName()
-							+ " in other element.");
+					reporter.fail("Element " + child.getStartTag() + ": no attribute "
+							+ attr.getName() + " in other element.");
 					return false;
 				} else if (ret == 1) {
-					reporter.fail("Element " + child.getStartTag() + ": different value for attribute " + attr.getName()
-							+ " in other element.");
+					reporter.fail(
+							"Element " + child.getStartTag() + ": different value for attribute "
+									+ attr.getName() + " in other element.");
 					return false;
 				}
 			}
@@ -1046,8 +1078,8 @@ public class SampleSitesIT {
 		}
 	}
 
-	private boolean compareComputedStyles(DOMElement elm, CSSElement otherdocElm, CSSDocument docToCompare,
-			String backendName, boolean ignoreNonCssHints) {
+	private boolean compareComputedStyles(DOMElement elm, CSSElement otherdocElm,
+			CSSDocument docToCompare, String backendName, boolean ignoreNonCssHints) {
 		ComputedCSSStyle style;
 		try {
 			style = elm.getComputedStyle(null);
@@ -1084,35 +1116,39 @@ public class SampleSitesIT {
 			CSSStyleSheetList<? extends CSSRule> sheets;
 			if (left != null) {
 				// Report only if non-CSS presentational hints cannot be the reason
-				if (!ignoreNonCssHints || elm.hasPresentationalHints() == otherdocElm.hasPresentationalHints()) {
+				if (!ignoreNonCssHints
+						|| elm.hasPresentationalHints() == otherdocElm.hasPresentationalHints()) {
 					sheets = document.getStyleSheets();
 					for (String property : left) {
-						if (property.charAt(0) != '*' && property.charAt(property.length() - 1) != 0xfffd) {
+						if (property.charAt(0) != '*'
+								&& property.charAt(property.length() - 1) != 0xfffd) {
 							for (int j = 0; j < sheets.getLength(); j++) {
 								String value = style.getPropertyValue(property);
 								CSSStyleSheet<? extends CSSRule> sheet = sheets.item(j);
-								Selector[] sel = ((BaseCSSStyleSheet) sheet).getSelectorsForPropertyValue(property,
-										value);
+								Selector[] sel = ((BaseCSSStyleSheet) sheet)
+										.getSelectorsForPropertyValue(property, value);
 								if (sel != null) {
 									LinkedList<Selector> selectorList = new LinkedList<>();
-									LinkedList<Selector> unmatched = unmatchedSelectors(sel, elm, otherdocElm,
-											selectorList);
-									reporter.unmatchedLeftSelector(sheet, j, elm, property, value, selectorList,
-											unmatched);
-									failinfo = backendName + " comparison: on element <" + elm.getTagName()
-											+ ">, property " + property + " with value '" + value
-											+ "' found only in first document's sheet " + j + ", selectors "
-											+ printSelectorList(selectorList);
+									LinkedList<Selector> unmatched = unmatchedSelectors(sel, elm,
+											otherdocElm, selectorList);
+									reporter.unmatchedLeftSelector(sheet, j, elm, property, value,
+											selectorList, unmatched);
+									failinfo = backendName + " comparison: on element <"
+											+ elm.getTagName() + ">, property " + property
+											+ " with value '" + value
+											+ "' found only in first document's sheet " + j
+											+ ", selectors " + printSelectorList(selectorList);
 									retval = false;
 								} else {
-									sel = ((BaseCSSStyleSheet) sheet).getSelectorsForProperty(property);
+									sel = ((BaseCSSStyleSheet) sheet)
+											.getSelectorsForProperty(property);
 									if (sel != null) {
 										LinkedList<Selector> selectorList = new LinkedList<>();
-										LinkedList<Selector> unmatched = unmatchedSelectors(sel, elm, otherdocElm,
-												selectorList);
+										LinkedList<Selector> unmatched = unmatchedSelectors(sel,
+												elm, otherdocElm, selectorList);
 										if (!unmatched.isEmpty()) {
-											reporter.unmatchedRightSelector(sheet, j, elm, property, value,
-													selectorList, unmatched);
+											reporter.unmatchedRightSelector(sheet, j, elm, property,
+													value, selectorList, unmatched);
 											retval = false;
 										}
 									}
@@ -1124,7 +1160,8 @@ public class SampleSitesIT {
 				if (!retval) {
 					if (right == null && different == null) {
 						reporter.computedStyleExtraProperties(
-								"Tree comparison failed, first document had more properties", elm, left, backendName);
+								"Tree comparison failed, first document had more properties", elm,
+								left, backendName);
 						return false;
 					} else if (failinfo == null) {
 						failinfo = "Tree comparison failed, first document had more properties";
@@ -1137,25 +1174,29 @@ public class SampleSitesIT {
 					for (int j = 0; j < sheets.getLength(); j++) {
 						CSSStyleSheet<? extends CSSRule> sheet = sheets.item(j);
 						String value = otherStyle.getPropertyValue(property);
-						Selector[] sel = ((BaseCSSStyleSheet) sheet).getSelectorsForPropertyValue(property, value);
+						Selector[] sel = ((BaseCSSStyleSheet) sheet)
+								.getSelectorsForPropertyValue(property, value);
 						if (sel != null) {
 							LinkedList<Selector> selectorList = new LinkedList<>();
-							LinkedList<Selector> unmatched = unmatchedSelectors(sel, otherdocElm, elm, selectorList);
-							reporter.unmatchedRightSelector(sheet, j, elm, property, value, selectorList, unmatched);
-							failinfo = backendName + " comparison: on element <" + otherdocElm.getTagName()
-									+ ">, property " + property + " with value '" + value
-									+ "' found only in second document's sheet " + j + ", selectors "
-									+ printSelectorList(selectorList);
+							LinkedList<Selector> unmatched = unmatchedSelectors(sel, otherdocElm,
+									elm, selectorList);
+							reporter.unmatchedRightSelector(sheet, j, elm, property, value,
+									selectorList, unmatched);
+							failinfo = backendName + " comparison: on element <"
+									+ otherdocElm.getTagName() + ">, property " + property
+									+ " with value '" + value
+									+ "' found only in second document's sheet " + j
+									+ ", selectors " + printSelectorList(selectorList);
 							retval = false;
 						} else {
 							sel = ((BaseCSSStyleSheet) sheet).getSelectorsForProperty(property);
 							if (sel != null) {
 								LinkedList<Selector> selectorList = new LinkedList<>();
-								LinkedList<Selector> unmatched = unmatchedSelectors(sel, otherdocElm, elm,
-										selectorList);
+								LinkedList<Selector> unmatched = unmatchedSelectors(sel,
+										otherdocElm, elm, selectorList);
 								if (!unmatched.isEmpty()) {
-									reporter.unmatchedRightSelector(sheet, j, elm, property, value, selectorList,
-											unmatched);
+									reporter.unmatchedRightSelector(sheet, j, elm, property, value,
+											selectorList, unmatched);
 									retval = false;
 								}
 							}
@@ -1164,11 +1205,13 @@ public class SampleSitesIT {
 				}
 				if (!retval) {
 					if (different == null) {
-						reporter.computedStyleExtraProperties("Tree comparison failed: " + backendName + " has more properties.", elm, right,
-								backendName);
+						reporter.computedStyleExtraProperties(
+								"Tree comparison failed: " + backendName + " has more properties.",
+								elm, right, backendName);
 						return false;
 					} else if (failinfo == null) {
-						failinfo = "Tree comparison failed: " + backendName + " has more properties.";
+						failinfo = "Tree comparison failed: " + backendName
+								+ " has more properties.";
 					}
 				}
 			}
@@ -1180,23 +1223,28 @@ public class SampleSitesIT {
 					String value = style.getPropertyValue(property);
 					for (int j = 0; j < sheets.getLength(); j++) {
 						CSSStyleSheet<? extends CSSRule> sheet = sheets.item(j);
-						Selector[] sel = ((BaseCSSStyleSheet) sheet).getSelectorsForPropertyValue(property, value);
+						Selector[] sel = ((BaseCSSStyleSheet) sheet)
+								.getSelectorsForPropertyValue(property, value);
 						if (sel != null) {
 							LinkedList<Selector> selectorList = new LinkedList<>();
-							LinkedList<Selector> unmatched = unmatchedSelectors(sel, elm, otherdocElm, selectorList);
-							reporter.unmatchedLeftSelector(sheet, j, elm, property, value, selectorList, unmatched);
+							LinkedList<Selector> unmatched = unmatchedSelectors(sel, elm,
+									otherdocElm, selectorList);
+							reporter.unmatchedLeftSelector(sheet, j, elm, property, value,
+									selectorList, unmatched);
 							retval = false;
 						}
 					}
 					String othervalue = otherStyle.getPropertyValue(property);
 					for (int j = 0; j < otherSheets.getLength(); j++) {
 						CSSStyleSheet<? extends CSSRule> sheet = otherSheets.item(j);
-						Selector[] sel = ((BaseCSSStyleSheet) sheet).getSelectorsForPropertyValue(property, othervalue);
+						Selector[] sel = ((BaseCSSStyleSheet) sheet)
+								.getSelectorsForPropertyValue(property, othervalue);
 						if (sel != null) {
 							LinkedList<Selector> selectorList = new LinkedList<>();
-							LinkedList<Selector> unmatched = unmatchedSelectors(sel, otherdocElm, elm, selectorList);
-							reporter.unmatchedRightSelector(sheet, j, elm, property, othervalue, selectorList,
-									unmatched);
+							LinkedList<Selector> unmatched = unmatchedSelectors(sel, otherdocElm,
+									elm, selectorList);
+							reporter.unmatchedRightSelector(sheet, j, elm, property, othervalue,
+									selectorList, unmatched);
 							retval = false;
 						}
 					}
@@ -1214,8 +1262,8 @@ public class SampleSitesIT {
 							}
 							reporter.differentComputedValues(elm, property, value, othervalue);
 							if (failinfo != null) {
-								failinfo = "Different values found for property " + property + " ('" + value + "' vs '"
-										+ othervalue + "')";
+								failinfo = "Different values found for property " + property + " ('"
+										+ value + "' vs '" + othervalue + "')";
 							}
 							retval = false;
 						}
@@ -1275,8 +1323,8 @@ public class SampleSitesIT {
 		return retval;
 	}
 
-	private LinkedList<Selector> unmatchedSelectors(Selector[] sel, CSSElement elm, CSSElement otherdocElm,
-			LinkedList<Selector> selectorList) {
+	private LinkedList<Selector> unmatchedSelectors(Selector[] sel, CSSElement elm,
+			CSSElement otherdocElm, LinkedList<Selector> selectorList) {
 		LinkedList<Selector> unmatched = new LinkedList<>();
 		for (Selector selector : sel) {
 			if (elm.getSelectorMatcher().matches(selector)) {
@@ -1310,7 +1358,8 @@ public class SampleSitesIT {
 		for (int i = 0; i < sz; i++) {
 			Node node = list.item(i + delta);
 			Node nodeo = other.item(i);
-			if (node.getNodeType() != nodeo.getNodeType() || !node.getNodeName().equals(nodeo.getNodeName())
+			if (node.getNodeType() != nodeo.getNodeType()
+					|| !node.getNodeName().equals(nodeo.getNodeName())
 					|| !Objects.equals(node.getNodeValue(), nodeo.getNodeValue())) {
 				nodediff.add(nodeo);
 				if (countdiff != 0) {
@@ -1325,8 +1374,9 @@ public class SampleSitesIT {
 				Node nodeo = other.item(i + sz);
 				short type = nodeo.getNodeType();
 				final String nodeval;
-				if (type == Node.ELEMENT_NODE || (type == Node.TEXT_NODE && (nodeval = nodeo.getNodeValue()) != null
-						&& nodeval.trim().length() != 0)) {
+				if (type == Node.ELEMENT_NODE
+						|| (type == Node.TEXT_NODE && (nodeval = nodeo.getNodeValue()) != null
+								&& nodeval.trim().length() != 0)) {
 					nodediff.add(nodeo);
 				}
 			}
@@ -1334,8 +1384,8 @@ public class SampleSitesIT {
 
 		if (!nodediff.isEmpty()) {
 			reporter.differentNodes(parent, nodediff);
-			reporter.fail(backendName + " comparison: found " + nodediff.size() + " different node(s) for parent: "
-					+ parent.getStartTag());
+			reporter.fail(backendName + " comparison: found " + nodediff.size()
+					+ " different node(s) for parent: " + parent.getStartTag());
 		}
 	}
 
@@ -1432,7 +1482,8 @@ public class SampleSitesIT {
 		}
 
 		@Override
-		protected AgentXHTMLDocument parseDocument(Reader re) throws DocumentException, IOException {
+		protected AgentXHTMLDocument parseDocument(Reader re)
+				throws DocumentException, IOException {
 			InputSource source = new InputSource(re);
 
 			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
@@ -1449,6 +1500,7 @@ public class SampleSitesIT {
 				throw new DocumentException("Unable to parse document", e);
 			}
 		}
+
 	}
 
 	class WrapperFactory extends DOMCSSStyleSheetFactory {
@@ -1480,11 +1532,9 @@ public class SampleSitesIT {
 			/**
 			 * Opens a connection for the given URL.
 			 * 
-			 * @param url
-			 *            the URL to open a connection to.
+			 * @param url the URL to open a connection to.
 			 * @return the URL connection.
-			 * @throws IOException
-			 *             if the connection could not be opened.
+			 * @throws IOException if the connection could not be opened.
 			 */
 			@Override
 			public URLConnection openConnection(URL url) throws IOException {
@@ -1505,8 +1555,7 @@ public class SampleSitesIT {
 			/**
 			 * Set the time at which this document was loaded from origin.
 			 * 
-			 * @param time
-			 *            the time of loading, in milliseconds.
+			 * @param time the time of loading, in milliseconds.
 			 */
 			@Override
 			public void setLoadingTime(long time) {
