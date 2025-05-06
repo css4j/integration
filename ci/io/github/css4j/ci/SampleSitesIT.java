@@ -28,11 +28,11 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
@@ -92,7 +92,6 @@ import io.sf.carte.doc.style.css.om.BaseCSSStyleDeclaration;
 import io.sf.carte.doc.style.css.om.BaseCSSStyleSheet;
 import io.sf.carte.doc.style.css.om.CSSOMBridge;
 import io.sf.carte.doc.style.css.om.CSSRuleArrayList;
-import io.sf.carte.doc.style.css.om.CSSStyleDeclarationRule;
 import io.sf.carte.doc.style.css.om.ComputedCSSStyle;
 import io.sf.carte.doc.style.css.om.DOMCSSStyleSheetFactory;
 import io.sf.carte.doc.style.css.om.DefaultErrorHandler;
@@ -311,7 +310,7 @@ public class SampleSitesIT {
 
 	@Parameters
 	public static Collection<Object[]> data() throws IOException {
-		List<Object[]> sites = new LinkedList<Object[]>();
+		List<Object[]> sites = new LinkedList<>();
 		try (BufferedReader re = new BufferedReader(loadFileFromClasspath(urlsFilename))) {
 			String site;
 			while ((site = re.readLine()) != null) {
@@ -607,54 +606,42 @@ public class SampleSitesIT {
 	private boolean checkDocumentHandler(HTMLDocument document) {
 		DefaultErrorHandler eh = (DefaultErrorHandler) document.getErrorHandler();
 		if (eh.hasErrors()) {
-			HashMap<Node, CSSMediaException> me = eh.getMediaErrors();
+			Map<Node, CSSMediaException> me = eh.getMediaErrors();
 			if (me != null) {
-				Iterator<Entry<Node, CSSMediaException>> it = me.entrySet().iterator();
-				while (it.hasNext()) {
-					Entry<Node, CSSMediaException> entry = it.next();
+				for (Entry<Node, CSSMediaException> entry : me.entrySet()) {
 					reporter.mediaQueryError(entry.getKey(), entry.getValue());
 				}
 			}
 			LinkedHashMap<Node, String> linkedErrors = eh.getLinkedStyleErrors();
 			if (linkedErrors != null) {
-				Iterator<Entry<Node, String>> it = linkedErrors.entrySet().iterator();
-				while (it.hasNext()) {
-					Entry<Node, String> esEntry = it.next();
+				for (Entry<Node, String> esEntry : linkedErrors.entrySet()) {
 					reporter.linkedStyleError(esEntry.getKey(), esEntry.getValue());
 				}
 			}
 			LinkedHashMap<Exception, String> inlineErrors = eh.getInlineStyleErrors();
 			if (inlineErrors != null) {
-				Iterator<Entry<Exception, String>> it = inlineErrors.entrySet().iterator();
-				while (it.hasNext()) {
-					Entry<Exception, String> eoEntry = it.next();
+				for (Entry<Exception, String> eoEntry : inlineErrors.entrySet()) {
 					reporter.inlineStyleError(null, eoEntry.getKey(), eoEntry.getValue());
 				}
 			}
 			LinkedHashMap<Exception, CSSStyleSheet<? extends CSSRule>> linkedSheetErrs = eh.getLinkedSheetErrors();
 			if (linkedSheetErrs != null) {
-				Iterator<Entry<Exception, CSSStyleSheet<? extends CSSRule>>> it = linkedSheetErrs.entrySet().iterator();
-				while (it.hasNext()) {
-					Entry<Exception, CSSStyleSheet<? extends CSSRule>> eoEntry = it.next();
+				for (Entry<Exception, CSSStyleSheet<? extends CSSRule>> eoEntry : linkedSheetErrs.entrySet()) {
 					reporter.linkedSheetError(eoEntry.getKey(), eoEntry.getValue());
 				}
 			}
 			Set<CSSElement> owners = eh.getInlineStyleOwners();
 			if (owners != null) {
-				Iterator<CSSElement> it = owners.iterator();
-				while (it.hasNext()) {
-					CSSElement owner = it.next();
+				for (CSSElement owner : owners) {
 					StyleDeclarationErrorHandler styleHandler = eh.getInlineStyleErrorHandler(owner);
 					if (styleHandler.hasErrors()) {
 						reporter.inlineStyleError(owner, styleHandler);
 					}
 				}
 			}
-			HashMap<String, IOException> ruleio = eh.getIOErrors();
+			Map<String, IOException> ruleio = eh.getIOErrors();
 			if (ruleio != null) {
-				Iterator<Entry<String, IOException>> it = ruleio.entrySet().iterator();
-				while (it.hasNext()) {
-					Entry<String, IOException> entry = it.next();
+				for (Entry<String, IOException> entry : ruleio.entrySet()) {
 					String href = entry.getKey();
 					reporter.ioError(href, entry.getValue());
 				}
@@ -731,10 +718,10 @@ public class SampleSitesIT {
 		return result;
 	}
 
-	private boolean checkMinification(CSSStyleDeclarationRule rule, int sheetIndex, int ruleIndex) {
+	private boolean checkMinification(StyleRule rule, int sheetIndex, int ruleIndex) {
 		boolean result = true;
 		BaseCSSStyleDeclaration style = (BaseCSSStyleDeclaration) rule.getStyle();
-		CSSStyleDeclarationRule stylerule = rule.getParentStyleSheet().createStyleRule();
+		StyleRule stylerule = rule.getParentStyleSheet().createStyleRule();
 		String mini;
 		try {
 			mini = CSSOMBridge.getOptimizedCssText(style);
@@ -772,8 +759,7 @@ public class SampleSitesIT {
 		String[] right = diff.getRightSide();
 		String[] different = diff.getDifferent();
 		if (left != null) {
-			for (int k = 0; k < left.length; k++) {
-				String property = left[k];
+			for (String property : left) {
 				if (property.charAt(0) != '*' && property.charAt(property.length() - 1) != 0xfffd) {
 					reporter.minifiedMissingProperty(parent, ruleIndex, style.getCssText(), serializedText, property,
 							style.getPropertyValue(property));
@@ -782,9 +768,9 @@ public class SampleSitesIT {
 			}
 		}
 		if (right != null) {
-			for (int k = 0; k < right.length; k++) {
-				reporter.minifiedExtraProperty(parent, ruleIndex, style.getCssText(), serializedText, right[k],
-						style.getPropertyValue(right[k]));
+			for (String property : right) {
+				reporter.minifiedExtraProperty(parent, ruleIndex, style.getCssText(), serializedText, property,
+						style.getPropertyValue(property));
 			}
 			foundDiff = true;
 		}
@@ -792,8 +778,7 @@ public class SampleSitesIT {
 		ValueComparator comp = new ValueComparator(style);
 		StyleValue value, minivalue;
 		if (different != null) {
-			for (int k = 0; k < different.length; k++) {
-				String property = different[k];
+			for (String property : different) {
 				if (!comp.isNotDifferent(property, value = style.getPropertyCSSValue(property),
 						minivalue = otherstyle.getPropertyCSSValue(property))) {
 					String valueText = value.getCssText();
@@ -816,11 +801,11 @@ public class SampleSitesIT {
 		return foundDiff;
 	}
 
-	private boolean checkDeclarationRule(BaseCSSDeclarationRule rule, int sheetIndex, int ruleIndex,
+	private boolean checkDeclarationRule(CSSDeclarationRule rule, int sheetIndex, int ruleIndex,
 			AbstractCSSStyleSheet sheet, String serializedText) {
 		boolean result = true;
 		BaseCSSStyleDeclaration style = (BaseCSSStyleDeclaration) rule.getStyle();
-		CSSDeclarationRule other = rule.clone(sheet);
+		CSSDeclarationRule other = (CSSDeclarationRule) ((AbstractCSSRule) rule).clone(sheet);
 		other.getStyle().setCssText("");
 		try {
 			other.setCssText(serializedText);
@@ -883,20 +868,19 @@ public class SampleSitesIT {
 		String[] right = diff.getRightSide();
 		String[] different = diff.getDifferent();
 		if (left != null) {
-			for (int k = 0; k < left.length; k++) {
-				String property = left[k];
+			for (String property : left) {
 				if (property.charAt(0) != '*' && property.charAt(property.length() - 1) != 0xfffd) {
-					reporter.reparsedMissingProperty(parent, ruleIndex, parsedText, otherStyle.getCssText(), left[k],
-							style.getPropertyValue(left[k]));
+					reporter.reparsedMissingProperty(parent, ruleIndex, parsedText, otherStyle.getCssText(), property,
+							style.getPropertyValue(property));
 					result = true;
 				}
 			}
 		}
 
 		if (right != null) {
-			for (int k = 0; k < right.length; k++) {
-				reporter.reparsedExtraProperty(parent, ruleIndex, parsedText, otherStyle.getCssText(), right[k],
-						style.getPropertyValue(right[k]));
+			for (String property : right) {
+				reporter.reparsedExtraProperty(parent, ruleIndex, parsedText, otherStyle.getCssText(), property,
+						style.getPropertyValue(property));
 			}
 			result = true;
 		}
@@ -904,8 +888,7 @@ public class SampleSitesIT {
 		StyleValue value, reparsedValue;
 		if (different != null) {
 			ValueComparator comp = new ValueComparator(style);
-			for (int k = 0; k < different.length; k++) {
-				String property = different[k];
+			for (String property : different) {
 				if (!comp.isNotDifferent(property, value = style.getPropertyCSSValue(property),
 						reparsedValue = otherStyle.getPropertyCSSValue(property))) {
 					String valueText = value.getCssText();
@@ -1004,9 +987,7 @@ public class SampleSitesIT {
 		}
 
 		if (!attrs.isEmpty()) {
-			Iterator<Attr> it = attrs.iterator();
-			while (it.hasNext()) {
-				Attr attr = it.next();
+			for (Attr attr : attrs) {
 				short ret = compareAttribute(child, attr, otherAttrs);
 				if (ret == 2) {
 					reporter.fail("Element " + child.getStartTag() + ": no attribute " + attr.getName()
@@ -1096,7 +1077,7 @@ public class SampleSitesIT {
 		boolean retval = true;
 		String failinfo = null;
 		if (!style.equals(otherStyle)) {
-			Diff<String> diff = ((BaseCSSStyleDeclaration) style).diff((BaseCSSStyleDeclaration) otherStyle);
+			Diff<String> diff = style.diff((BaseCSSStyleDeclaration) otherStyle);
 			String[] left = diff.getLeftSide();
 			String[] right = diff.getRightSide();
 			String[] different = diff.getDifferent();
@@ -1105,8 +1086,7 @@ public class SampleSitesIT {
 				// Report only if non-CSS presentational hints cannot be the reason
 				if (!ignoreNonCssHints || elm.hasPresentationalHints() == otherdocElm.hasPresentationalHints()) {
 					sheets = document.getStyleSheets();
-					for (int i = 0; i < left.length; i++) {
-						String property = left[i];
+					for (String property : left) {
 						if (property.charAt(0) != '*' && property.charAt(property.length() - 1) != 0xfffd) {
 							for (int j = 0; j < sheets.getLength(); j++) {
 								String value = style.getPropertyValue(property);
@@ -1114,7 +1094,7 @@ public class SampleSitesIT {
 								Selector[] sel = ((BaseCSSStyleSheet) sheet).getSelectorsForPropertyValue(property,
 										value);
 								if (sel != null) {
-									LinkedList<Selector> selectorList = new LinkedList<Selector>();
+									LinkedList<Selector> selectorList = new LinkedList<>();
 									LinkedList<Selector> unmatched = unmatchedSelectors(sel, elm, otherdocElm,
 											selectorList);
 									reporter.unmatchedLeftSelector(sheet, j, elm, property, value, selectorList,
@@ -1127,7 +1107,7 @@ public class SampleSitesIT {
 								} else {
 									sel = ((BaseCSSStyleSheet) sheet).getSelectorsForProperty(property);
 									if (sel != null) {
-										LinkedList<Selector> selectorList = new LinkedList<Selector>();
+										LinkedList<Selector> selectorList = new LinkedList<>();
 										LinkedList<Selector> unmatched = unmatchedSelectors(sel, elm, otherdocElm,
 												selectorList);
 										if (!unmatched.isEmpty()) {
@@ -1153,28 +1133,28 @@ public class SampleSitesIT {
 			}
 			if (right != null) {
 				sheets = docToCompare.getStyleSheets();
-				for (int i = 0; i < right.length; i++) {
+				for (String property : right) {
 					for (int j = 0; j < sheets.getLength(); j++) {
 						CSSStyleSheet<? extends CSSRule> sheet = sheets.item(j);
-						String value = otherStyle.getPropertyValue(right[i]);
-						Selector[] sel = ((BaseCSSStyleSheet) sheet).getSelectorsForPropertyValue(right[i], value);
+						String value = otherStyle.getPropertyValue(property);
+						Selector[] sel = ((BaseCSSStyleSheet) sheet).getSelectorsForPropertyValue(property, value);
 						if (sel != null) {
-							LinkedList<Selector> selectorList = new LinkedList<Selector>();
+							LinkedList<Selector> selectorList = new LinkedList<>();
 							LinkedList<Selector> unmatched = unmatchedSelectors(sel, otherdocElm, elm, selectorList);
-							reporter.unmatchedRightSelector(sheet, j, elm, right[i], value, selectorList, unmatched);
+							reporter.unmatchedRightSelector(sheet, j, elm, property, value, selectorList, unmatched);
 							failinfo = backendName + " comparison: on element <" + otherdocElm.getTagName()
-									+ ">, property " + right[i] + " with value '" + value
+									+ ">, property " + property + " with value '" + value
 									+ "' found only in second document's sheet " + j + ", selectors "
 									+ printSelectorList(selectorList);
 							retval = false;
 						} else {
-							sel = ((BaseCSSStyleSheet) sheet).getSelectorsForProperty(right[i]);
+							sel = ((BaseCSSStyleSheet) sheet).getSelectorsForProperty(property);
 							if (sel != null) {
-								LinkedList<Selector> selectorList = new LinkedList<Selector>();
+								LinkedList<Selector> selectorList = new LinkedList<>();
 								LinkedList<Selector> unmatched = unmatchedSelectors(sel, otherdocElm, elm,
 										selectorList);
 								if (!unmatched.isEmpty()) {
-									reporter.unmatchedRightSelector(sheet, j, elm, right[i], value, selectorList,
+									reporter.unmatchedRightSelector(sheet, j, elm, property, value, selectorList,
 											unmatched);
 									retval = false;
 								}
@@ -1193,17 +1173,16 @@ public class SampleSitesIT {
 				}
 			}
 			if (different != null) {
-				diff = ((BaseCSSStyleDeclaration) style).diff((BaseCSSStyleDeclaration) otherStyle);
+				diff = style.diff((BaseCSSStyleDeclaration) otherStyle);
 				sheets = document.getStyleSheets();
 				CSSStyleSheetList<? extends CSSRule> otherSheets = docToCompare.getStyleSheets();
-				for (int i = 0; i < different.length; i++) {
-					String property = different[i];
+				for (String property : different) {
 					String value = style.getPropertyValue(property);
 					for (int j = 0; j < sheets.getLength(); j++) {
 						CSSStyleSheet<? extends CSSRule> sheet = sheets.item(j);
 						Selector[] sel = ((BaseCSSStyleSheet) sheet).getSelectorsForPropertyValue(property, value);
 						if (sel != null) {
-							LinkedList<Selector> selectorList = new LinkedList<Selector>();
+							LinkedList<Selector> selectorList = new LinkedList<>();
 							LinkedList<Selector> unmatched = unmatchedSelectors(sel, elm, otherdocElm, selectorList);
 							reporter.unmatchedLeftSelector(sheet, j, elm, property, value, selectorList, unmatched);
 							retval = false;
@@ -1214,7 +1193,7 @@ public class SampleSitesIT {
 						CSSStyleSheet<? extends CSSRule> sheet = otherSheets.item(j);
 						Selector[] sel = ((BaseCSSStyleSheet) sheet).getSelectorsForPropertyValue(property, othervalue);
 						if (sel != null) {
-							LinkedList<Selector> selectorList = new LinkedList<Selector>();
+							LinkedList<Selector> selectorList = new LinkedList<>();
 							LinkedList<Selector> unmatched = unmatchedSelectors(sel, otherdocElm, elm, selectorList);
 							reporter.unmatchedRightSelector(sheet, j, elm, property, othervalue, selectorList,
 									unmatched);
@@ -1268,21 +1247,17 @@ public class SampleSitesIT {
 
 		ErrorHandler eh = element.getOwnerDocument().getErrorHandler();
 		if (eh.hasComputedStyleErrors(element)) {
-			HashMap<String, CSSPropertyValueException> csemap = ((DefaultErrorHandler) eh)
+			Map<String, CSSPropertyValueException> csemap = ((DefaultErrorHandler) eh)
 					.getComputedStyleErrors(element);
 			if (csemap != null) {
-				Iterator<Entry<String, CSSPropertyValueException>> it = csemap.entrySet().iterator();
-				while (it.hasNext()) {
-					Entry<String, CSSPropertyValueException> entry = it.next();
+				for (Entry<String, CSSPropertyValueException> entry : csemap.entrySet()) {
 					reporter.computedStyleError(element, entry.getKey(), entry.getValue());
 					retval = false;
 				}
 			}
 			List<DOMException> hintlist = ((DefaultErrorHandler) eh).getHintErrors(element);
 			if (hintlist != null) {
-				Iterator<DOMException> it = hintlist.iterator();
-				while (it.hasNext()) {
-					DOMException ex = it.next();
+				for (DOMException ex : hintlist) {
 					reporter.presentationalHintError(element, ex);
 					retval = false;
 				}
@@ -1302,12 +1277,12 @@ public class SampleSitesIT {
 
 	private LinkedList<Selector> unmatchedSelectors(Selector[] sel, CSSElement elm, CSSElement otherdocElm,
 			LinkedList<Selector> selectorList) {
-		LinkedList<Selector> unmatched = new LinkedList<Selector>();
-		for (int k = 0; k < sel.length; k++) {
-			if (elm.getSelectorMatcher().matches(sel[k])) {
-				selectorList.add(sel[k]);
-				if (!otherdocElm.getSelectorMatcher().matches(sel[k])) {
-					unmatched.add(sel[k]);
+		LinkedList<Selector> unmatched = new LinkedList<>();
+		for (Selector selector : sel) {
+			if (elm.getSelectorMatcher().matches(selector)) {
+				selectorList.add(selector);
+				if (!otherdocElm.getSelectorMatcher().matches(selector)) {
+					unmatched.add(selector);
 				}
 			}
 		}
@@ -1330,7 +1305,7 @@ public class SampleSitesIT {
 			sz = sz1;
 		}
 		int countdiff = Math.abs(sz2 - sz1);
-		LinkedList<Node> nodediff = new LinkedList<Node>();
+		LinkedList<Node> nodediff = new LinkedList<>();
 		int delta = 0;
 		for (int i = 0; i < sz; i++) {
 			Node node = list.item(i + delta);

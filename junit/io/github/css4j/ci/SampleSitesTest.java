@@ -19,7 +19,7 @@ import org.junit.Test;
 import io.sf.carte.doc.dom.DOMBridge;
 import io.sf.carte.doc.style.css.om.AbstractCSSStyleSheet;
 import io.sf.carte.doc.style.css.om.BaseCSSStyleDeclaration;
-import io.sf.carte.doc.style.css.om.CSSStyleDeclarationRule;
+import io.sf.carte.doc.style.css.om.StyleRule;
 import io.sf.carte.doc.style.css.property.StyleValue;
 import io.sf.carte.doc.style.css.property.ValueFactory;
 
@@ -39,7 +39,7 @@ public class SampleSitesTest {
 	private BaseCSSStyleDeclaration createCSSStyleDeclaration() {
 		AbstractCSSStyleSheet sheet = DOMBridge.createLinkedStyleSheet(sitetest.document.getImplementation(),
 				sitetest.document.getDocumentElement());
-		CSSStyleDeclarationRule styleRule = sheet.createStyleRule();
+		StyleRule styleRule = sheet.createStyleRule();
 		return (BaseCSSStyleDeclaration) styleRule.getStyle();
 	}
 

@@ -35,10 +35,10 @@ import io.sf.carte.doc.style.css.nsac.CSSParseException;
 import io.sf.carte.doc.style.css.nsac.Selector;
 import io.sf.carte.doc.style.css.nsac.SelectorList;
 import io.sf.carte.doc.style.css.om.AbstractCSSStyleSheet;
-import io.sf.carte.doc.style.css.om.CSSStyleDeclarationRule;
 import io.sf.carte.doc.style.css.om.DefaultSheetErrorHandler;
 import io.sf.carte.doc.style.css.om.DefaultStyleDeclarationErrorHandler;
 import io.sf.carte.doc.style.css.om.RuleParseException;
+import io.sf.carte.doc.style.css.om.StyleRule;
 import io.sf.carte.doc.style.css.property.CSSPropertyValueException;
 
 abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
@@ -123,9 +123,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	public void leftHasMoreSheets(List<CSSStyleSheet<? extends CSSRule>> missingSheets, int smallerCount) {
 		writeError(leftSide + " has more style sheets, " + (missingSheets.size() + smallerCount) + " instead of "
 				+ smallerCount);
-		Iterator<CSSStyleSheet<? extends CSSRule>> it = missingSheets.iterator();
-		while (it.hasNext()) {
-			CSSStyleSheet<? extends CSSRule> sheet = it.next();
+		for (CSSStyleSheet<? extends CSSRule> sheet : missingSheets) {
 			StringBuilder sb = new StringBuilder(128);
 			sb.append("The sheet is not in ").append(rightSide).append(", href ").append(sheet.getHref());
 			Node owner = sheet.getOwnerNode();
@@ -141,9 +139,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	public void rightHasMoreSheets(List<CSSStyleSheet<? extends CSSRule>> missingSheets, int smallerCount) {
 		writeError(rightSide + " has more style sheets, " + (missingSheets.size() + smallerCount) + " instead of "
 				+ smallerCount);
-		Iterator<CSSStyleSheet<? extends CSSRule>> it = missingSheets.iterator();
-		while (it.hasNext()) {
-			CSSStyleSheet<? extends CSSRule> sheet = it.next();
+		for (CSSStyleSheet<? extends CSSRule> sheet : missingSheets) {
 			StringBuilder sb = new StringBuilder(128);
 			sb.append("The sheet is not in ").append(leftSide).append(", href ").append(sheet.getHref());
 			Node owner = sheet.getOwnerNode();
@@ -198,7 +194,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 	}
 
 	@Override
-	public void ruleSelectorError(CSSStyleDeclarationRule stylerule, SelectorList selist, SelectorList otherSelist,
+	public void ruleSelectorError(StyleRule stylerule, SelectorList selist, SelectorList otherSelist,
 			String selectorText, int sheetIndex, int ruleIndex, AbstractCSSStyleSheet parent) {
 		writeSerializationError("Selector reparse error in rule: " + ruleIndex + " in sheet " + parent.getHref() + ":");
 		writeSerializationError("List 1 (CSSOM): " + stylerule.getSelectorText());
@@ -434,14 +430,6 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 				Iterator<RuleParseException> it = rpe.iterator();
 				while (it.hasNext()) {
 					writeError("Rule parsing error: " + it.next().toString());
-				}
-			}
-			LinkedList<String> emptyRules = dseh.getEmptyStyleRules();
-			if (emptyRules != null) {
-				selectWarningTargetSheet(sheet, sheetIndex);
-				Iterator<String> it = emptyRules.iterator();
-				while (it.hasNext()) {
-					writeWarning("Empty style rule with selector: " + it.next());
 				}
 			}
 		}
