@@ -833,6 +833,12 @@ public class SampleSitesIT {
 			return false;
 		}
 
+		if (other == null) {
+			reporter.ruleReparseIssue(rule.getParentStyleSheet(), ruleIndex, serializedText,
+					"Invalid rule.");
+			return false;
+		}
+
 		BaseCSSStyleDeclaration otherStyle = (BaseCSSStyleDeclaration) other.getStyle();
 		if (!style.equals(otherStyle) && reportStyleDiff(rule.getParentStyleSheet(), ruleIndex,
 				style, otherStyle, serializedText)) {
