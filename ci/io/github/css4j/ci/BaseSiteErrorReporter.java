@@ -421,7 +421,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 				selectErrorTargetSheet(sheet, sheetIndex);
 				Iterator<String> it = unknownRules.iterator();
 				while (it.hasNext()) {
-					writeError("Unknown rule: " + it.next());
+					writeWarning("Unknown rule: " + it.next());
 				}
 			}
 			LinkedList<RuleParseException> rpe = dseh.getRuleParseErrors();
