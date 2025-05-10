@@ -18,7 +18,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
@@ -324,10 +323,10 @@ public class TreeSiteErrorReporter extends BaseSiteErrorReporter {
 	private String getLinkedSheetInternalPath(StyleSheet sheet, String uri) {
 		String path;
 		try {
-			URL url = new URL(uri);
-			path = SampleSitesIT.encodeString(url.toExternalForm());
+			java.net.URI url = new java.net.URI(uri);
+			path = SampleSitesIT.encodeString(url.toString());
 			path = url.getHost() + '/' + path;
-		} catch (MalformedURLException e) {
+		} catch (Exception e) {
 			path = "-";
 		}
 		return path;

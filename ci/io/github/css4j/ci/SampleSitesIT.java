@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -214,6 +215,11 @@ public class SampleSitesIT {
 		}
 
 		// NSAC flags
+		s = config.getProperty("parser.starhack");
+		if ("true".equalsIgnoreCase(s)) {
+			parserFlags.add(Parser.Flag.STARHACK);
+			log.info("IE star hack allowed.");
+		}
 		s = config.getProperty("parser.ievalues");
 		if ("true".equalsIgnoreCase(s)) {
 			parserFlags.add(Parser.Flag.IEVALUES);
@@ -249,7 +255,7 @@ public class SampleSitesIT {
 
 	SiteErrorReporter reporter;
 
-	public SampleSitesIT(String uri) throws IOException {
+	public SampleSitesIT(String uri) throws URISyntaxException, IOException {
 		super();
 		agent = new MyDOMUserAgent();
 
@@ -260,7 +266,7 @@ public class SampleSitesIT {
 		dom4jAgent = new MyDOM4JUserAgent();
 
 		log.info("Testing URL: " + uri);
-		URL url = new URL(uri);
+		URL url = new java.net.URI(uri).toURL();
 
 		if (errorReporterType == 0) {
 			reporter = new LogSiteErrorReporter();

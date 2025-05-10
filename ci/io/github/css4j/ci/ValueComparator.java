@@ -11,9 +11,7 @@
 
 package io.github.css4j.ci;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.URI;
 import java.util.Iterator;
 
 import org.w3c.dom.DOMException;
@@ -295,17 +293,13 @@ class ValueComparator {
 	private boolean isSameURI(CSSTypedValue pri, CSSTypedValue primini) {
 		String uri = pri.getStringValue();
 		String urimini = primini.getStringValue();
-		URL baseurl;
+		URI baseuri;
 		try {
-			baseurl = new URL(style.getParentRule().getParentStyleSheet().getHref());
-		} catch (MalformedURLException e) {
-			return uri.equals(urimini);
-		}
-		try {
-			URL url = new URL(baseurl, uri);
-			URL urlmini = new URL(baseurl, urimini);
-			return url.toURI().normalize().equals(urlmini.toURI().normalize());
-		} catch (MalformedURLException | URISyntaxException e) {
+			baseuri = new URI(style.getParentRule().getParentStyleSheet().getHref());
+			URI u = baseuri.resolve(uri);
+			URI umini = baseuri.resolve(urimini);
+			return u.normalize().equals(umini.normalize());
+		} catch (Exception e) {
 		}
 		return uri.equals(urimini);
 	}
