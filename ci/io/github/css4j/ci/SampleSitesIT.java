@@ -872,8 +872,12 @@ public class SampleSitesIT {
 		SelectorList selist = stylerule.getSelectorList();
 		String cssText = stylerule.getCssText();
 		StyleRule orule = (StyleRule) parseRule(cssText);
-		SelectorList oselist = orule.getSelectorList();
-		boolean result = ParseHelper.equalSelectorList(selist, oselist);
+		SelectorList oselist = null;
+		boolean result = false;
+		if (orule != null) {
+			oselist = orule.getSelectorList();
+			result = ParseHelper.equalSelectorList(selist, oselist);
+		}
 		if (!result) {
 			reporter.ruleSelectorError(stylerule, selist, oselist, orule.getSelectorText(),
 					sheetIndex, ruleIndex, sheet);
