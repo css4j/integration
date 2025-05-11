@@ -872,14 +872,17 @@ public class SampleSitesIT {
 		SelectorList selist = stylerule.getSelectorList();
 		String cssText = stylerule.getCssText();
 		StyleRule orule = (StyleRule) parseRule(cssText);
+
 		SelectorList oselist = null;
+		String oseltext = null;
 		boolean result = false;
 		if (orule != null) {
 			oselist = orule.getSelectorList();
+			oseltext = orule.getSelectorText();
 			result = ParseHelper.equalSelectorList(selist, oselist);
 		}
 		if (!result) {
-			reporter.ruleSelectorError(stylerule, selist, oselist, orule.getSelectorText(),
+			reporter.ruleSelectorError(stylerule, selist, oselist, oseltext,
 					sheetIndex, ruleIndex, sheet);
 		}
 		return result;

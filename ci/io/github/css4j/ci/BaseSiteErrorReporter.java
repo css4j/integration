@@ -198,7 +198,7 @@ abstract public class BaseSiteErrorReporter implements SiteErrorReporter {
 			String selectorText, int sheetIndex, int ruleIndex, AbstractCSSStyleSheet parent) {
 		writeSerializationError("Selector reparse error in rule: " + ruleIndex + " in sheet " + parent.getHref() + ":");
 		writeSerializationError("List 1 (CSSOM): " + stylerule.getSelectorText());
-		writeSerializationError("List 2 (CSSOM): " + selectorText);
+		writeSerializationError("List 2 (CSSOM): " + (selectorText == null ? "null" : selectorText));
 		writeSerializationError("List 1  (NSAC): " + (selist == null ? "null" : selist.toString()));
 		writeSerializationError("List 2  (NSAC): " + (otherSelist == null ? "null" : otherSelist.toString()));
 	}
