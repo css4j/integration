@@ -107,6 +107,7 @@ import io.sf.carte.doc.style.css.parser.ParseHelper;
 import io.sf.carte.doc.style.css.property.CSSPropertyValueException;
 import io.sf.carte.doc.style.css.property.PropertyDatabase;
 import io.sf.carte.doc.style.css.property.StyleValue;
+import io.sf.carte.doc.style.css.util.ExceptionErrorHandler;
 import io.sf.carte.net.NetCache;
 import io.sf.carte.util.Diff;
 import nu.validator.htmlparser.common.XmlViolationPolicy;
@@ -859,6 +860,7 @@ public class SampleSitesIT {
 
 	private AbstractCSSRule parseRule(String serializedText) throws DOMException {
 		AbstractCSSStyleSheet sheet = agent.getDOMImplementation().createStyleSheet(null, null);
+		sheet.setErrorHandler(new ExceptionErrorHandler());
 		try {
 			sheet.parseStyleSheet(new StringReader(serializedText));
 		} catch (IOException e) {
