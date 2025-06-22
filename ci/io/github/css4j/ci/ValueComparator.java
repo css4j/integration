@@ -180,23 +180,9 @@ class ValueComparator {
 			Type otype = priOther.getPrimitiveType();
 			if (ptype == Type.COLOR) {
 				if (otype == Type.COLOR) {
-					RGBAColor color = pri.toRGBColor();
-					RGBAColor otherColor = priOther.toRGBColor();
-					if (similarComponentValues(color.getRed(), otherColor.getRed())
-							&& similarComponentValues(color.getGreen(), otherColor.getGreen())
-							&& similarComponentValues(color.getBlue(), otherColor.getBlue())
-							&& similarAlphaValue(color.getAlpha(), otherColor.getAlpha())) {
-						return 1;
-					} else {
-						return 2;
-					}
-				} else if (otype == Type.IDENT
-						&& "transparent".equalsIgnoreCase(priOther.getStringValue())) {
-					String cssText = pri.getMinifiedCssText("");
-					if ("rgba(0,0,0,0)".equals(cssText) || "rgb(0 0 0/0)".equals(cssText)) {
-						return 1;
-					}
-					return 2;
+					return compareColors(pri.toRGBColor(), priOther.toRGBColor());
+				} else if (otype == Type.IDENT) {
+					return compareColorToIdent(pri, priOther);
 				}
 			} else if (ptype == Type.URI && otype == Type.URI) {
 				URIValue uri = (URIValue) pri;
@@ -235,11 +221,15 @@ class ValueComparator {
 					}
 				}
 				return 1;
-			} else if (ptype == Type.IDENT && otype == Type.IDENT) {
-				String sv = pri.getStringValue();
-				String osv = priOther.getStringValue();
-				if (sv.equalsIgnoreCase(osv)) {
-					return 1;
+			} else if (ptype == Type.IDENT) {
+				if (otype == Type.IDENT) {
+					String sv = pri.getStringValue();
+					String osv = priOther.getStringValue();
+					if (sv.equalsIgnoreCase(osv)) {
+						return 1;
+					}
+				} else if (otype == Type.COLOR) {
+					return compareColorToIdent(priOther, pri);
 				}
 			} else if (pri.equals(priOther)) {
 				return 1;
@@ -290,6 +280,39 @@ class ValueComparator {
 		return 0;
 	}
 
+	/**
+	 * Compare a color to an identifier that may contain a color.
+	 * 
+	 * @param color the color.
+	 * @param ident the identifier.
+	 * @return 1 if not different, 2 if different, 0 if inconclusive
+	 */
+	private static int compareColorToIdent(CSSTypedValue color, CSSTypedValue ident) {
+		if ("transparent".equalsIgnoreCase(ident.getStringValue())) {
+			String cssText = color.getMinifiedCssText("");
+			if ("rgba(0,0,0,0)".equals(cssText) || "rgb(0 0 0/0)".equals(cssText)) {
+				return 1;
+			}
+		} else {
+			try {
+				return compareColors(color.toRGBColor(), ident.toRGBColor());
+			} catch (DOMException e) {
+			}
+		}
+		return 2;
+	}
+
+	private static int compareColors(RGBAColor color, RGBAColor otherColor) {
+		if (similarComponentValues(color.getRed(), otherColor.getRed())
+				&& similarComponentValues(color.getGreen(), otherColor.getGreen())
+				&& similarComponentValues(color.getBlue(), otherColor.getBlue())
+				&& similarAlphaValue(color.getAlpha(), otherColor.getAlpha())) {
+			return 1;
+		} else {
+			return 2;
+		}
+	}
+
 	private boolean isSameURI(CSSTypedValue pri, CSSTypedValue primini) {
 		String uri = pri.getStringValue();
 		String urimini = primini.getStringValue();
@@ -323,7 +346,7 @@ class ValueComparator {
 		return val;
 	}
 
-	private boolean similarAlphaValue(CSSPrimitiveValue alpha, CSSPrimitiveValue alpha2) {
+	private static boolean similarAlphaValue(CSSPrimitiveValue alpha, CSSPrimitiveValue alpha2) {
 		if (alpha.getPrimitiveType() != Type.NUMERIC || alpha2.getPrimitiveType() != Type.NUMERIC) {
 			return alpha.equals(alpha2);
 		}
