@@ -268,7 +268,7 @@ class ValueComparator {
 	private static int compareColorToIdent(CSSTypedValue color, CSSTypedValue ident) {
 		if ("transparent".equalsIgnoreCase(ident.getStringValue())) {
 			String cssText = color.getMinifiedCssText("");
-			if ("rgba(0,0,0,0)".equals(cssText) || "rgb(0 0 0/0)".equals(cssText)) {
+			if ("#0000".equals(cssText)) {
 				return 1;
 			}
 		} else {
