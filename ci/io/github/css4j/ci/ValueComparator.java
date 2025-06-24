@@ -25,9 +25,11 @@ import io.sf.carte.doc.style.css.CSSValue.CssType;
 import io.sf.carte.doc.style.css.CSSValue.Type;
 import io.sf.carte.doc.style.css.CSSValueList;
 import io.sf.carte.doc.style.css.RGBAColor;
+import io.sf.carte.doc.style.css.nsac.LexicalUnit;
 import io.sf.carte.doc.style.css.om.BaseCSSStyleDeclaration;
 import io.sf.carte.doc.style.css.om.CSSOMBridge;
 import io.sf.carte.doc.style.css.parser.ParseHelper;
+import io.sf.carte.doc.style.css.property.LexicalValue;
 import io.sf.carte.doc.style.css.property.NumberValue;
 import io.sf.carte.doc.style.css.property.PropertyDatabase;
 import io.sf.carte.doc.style.css.property.StyleValue;
@@ -234,7 +236,17 @@ class ValueComparator {
 			}
 		} else if (value.getCssValueType() == CssType.PROXY
 				&& otherValue.getCssValueType() == CssType.PROXY) {
-			return value.equals(otherValue) ? 1 : 2;
+			if (value.equals(otherValue)) {
+				return 1;
+			}
+			if (value.getPrimitiveType() == Type.LEXICAL && otherValue.getPrimitiveType() == Type.LEXICAL) {
+				LexicalUnit lu = ((LexicalValue) value).getLexicalUnit();
+				LexicalUnit otherlu = ((LexicalValue) otherValue).getLexicalUnit();
+				if (lexicalEquals(lu, otherlu)) {
+					return 1;
+				}
+			}
+			return 2;
 		} else if (value.getCssValueType() == CssType.LIST
 				&& otherValue.getCssValueType() == CssType.LIST) {
 			ValueList list = (ValueList) value;
@@ -289,6 +301,12 @@ class ValueComparator {
 		} else {
 			return 2;
 		}
+	}
+
+	private static boolean lexicalEquals(LexicalUnit lu, LexicalUnit otherlu) {
+		String mini = LexicalValue.serializeMinifiedSequence(lu, "", true);
+		String omini = LexicalValue.serializeMinifiedSequence(otherlu, "", true);
+		return mini.equalsIgnoreCase(omini);
 	}
 
 	private boolean isSameURI(CSSTypedValue pri, CSSTypedValue primini) {

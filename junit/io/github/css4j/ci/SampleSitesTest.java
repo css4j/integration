@@ -37,8 +37,8 @@ public class SampleSitesTest {
 	}
 
 	private BaseCSSStyleDeclaration createCSSStyleDeclaration() {
-		AbstractCSSStyleSheet sheet = DOMBridge.createLinkedStyleSheet(sitetest.document.getImplementation(),
-				sitetest.document.getDocumentElement());
+		AbstractCSSStyleSheet sheet = DOMBridge.createLinkedStyleSheet(
+				sitetest.document.getImplementation(), sitetest.document.getDocumentElement());
 		StyleRule styleRule = sheet.createStyleRule();
 		return (BaseCSSStyleDeclaration) styleRule.getStyle();
 	}
@@ -179,6 +179,7 @@ public class SampleSitesTest {
 		ValueFactory factory = new ValueFactory();
 		StyleValue other = factory.parseProperty("rgb(59% 61% 63% / 0.6)");
 		assertTrue(comparator.isNotDifferent("background-color", value, other));
+		assertTrue(comparator.isNotDifferent("background-color", other, value));
 	}
 
 	@Test
@@ -188,6 +189,7 @@ public class SampleSitesTest {
 		ValueFactory factory = new ValueFactory();
 		StyleValue other = factory.parseProperty("rgb(60% 48% 40% / 0)");
 		assertTrue(comparator.isNotDifferent("background-color", value, other));
+		assertTrue(comparator.isNotDifferent("background-color", other, value));
 	}
 
 	@Test
@@ -197,6 +199,7 @@ public class SampleSitesTest {
 		ValueFactory factory = new ValueFactory();
 		StyleValue other = factory.parseProperty("#f2f2f2");
 		assertTrue(comparator.isNotDifferent("background-color", value, other));
+		assertTrue(comparator.isNotDifferent("background-color", other, value));
 	}
 
 	@Test
@@ -206,6 +209,17 @@ public class SampleSitesTest {
 		ValueFactory factory = new ValueFactory();
 		StyleValue other = factory.parseProperty("transparent");
 		assertTrue(comparator.isNotDifferent("background-color", value, other));
+		assertTrue(comparator.isNotDifferent("background-color", other, value));
+	}
+
+	@Test
+	public void testIsNotDifferentColorIDent() {
+		styleDecl.setCssText("background-color: black;");
+		StyleValue value = styleDecl.getPropertyCSSValue("background-color");
+		ValueFactory factory = new ValueFactory();
+		StyleValue other = factory.parseProperty("#000");
+		assertTrue(comparator.isNotDifferent("background-color", value, other));
+		assertTrue(comparator.isNotDifferent("background-color", other, value));
 	}
 
 	@Test
@@ -250,19 +264,33 @@ public class SampleSitesTest {
 
 	@Test
 	public void testIsNotDifferentGradient() {
-		styleDecl.setCssText("background-image: linear-gradient(left, hsl(24 20% 50% / 0.1) 70%, hsl(24 20% 50% / 0))");
+		styleDecl.setCssText(
+				"background-image: linear-gradient(left, hsl(24 20% 50% / 0.1) 70%, hsl(24 20% 50% / 0))");
 		StyleValue value = styleDecl.getPropertyCSSValue("background-image");
 		ValueFactory factory = new ValueFactory();
-		StyleValue other = factory.parseProperty("linear-gradient(left, hsl(24 20% 50% / 0.1) 70%, rgb(60% 48% 40% / 0))");
+		StyleValue other = factory.parseProperty(
+				"linear-gradient(left, hsl(24 20% 50% / 0.1) 70%, rgb(60% 48% 40% / 0))");
 		assertTrue(comparator.isNotDifferent("background-image", value, other));
 	}
 
 	@Test
 	public void testIsNotDifferentGradient2() {
-		styleDecl.setCssText("background-image: linear-gradient(131deg, #fff 0%, hsl(0, 0%, 95%) 100%)");
+		styleDecl.setCssText(
+				"background-image: linear-gradient(131deg, #fff 0%, hsl(0, 0%, 95%) 100%)");
 		StyleValue value = styleDecl.getPropertyCSSValue("background-image");
 		ValueFactory factory = new ValueFactory();
 		StyleValue other = factory.parseProperty("linear-gradient(131deg,#fff 0%,#f2f2f2 100%)");
+		assertTrue(comparator.isNotDifferent("background-image", value, other));
+	}
+
+	@Test
+	public void testIsNotDifferentGradient3() {
+		styleDecl.setCssText(
+				"background-image: linear-gradient(0deg, var(--always-dark-overlay), black)");
+		StyleValue value = styleDecl.getPropertyCSSValue("background-image");
+		ValueFactory factory = new ValueFactory();
+		StyleValue other = factory
+				.parseProperty("linear-gradient(0deg, var(--always-dark-overlay), #000)");
 		assertTrue(comparator.isNotDifferent("background-image", value, other));
 	}
 
