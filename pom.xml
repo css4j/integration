@@ -46,7 +46,7 @@
 	<dependency>
 		<groupId>io.sf.carte</groupId>
 		<artifactId>css4j-agent</artifactId>
-		<version>5.3</version>
+		<version>6.0</version>
 		<type>jar</type>
 		<scope>compile</scope>
 		<optional>false</optional>
